@@ -7,16 +7,23 @@ using UnityEngine.Events;
 [RequireComponent(typeof(CircleCollider2D))]
 public class Gear : MonoBehaviour, IDraggable
 {
-    [SerializeField] private TMP_Text _text;
-    [SerializeField] private Transform _base;
-    [SerializeField] private Transform _teethContainer;
-    [Range(4, 20)]
+    [Range(4, 24)]
     [SerializeField] private int _numberOfTeeth = 4;
+    [SerializeField] private float _quality = 1.0f;
+    [SerializeField] private bool _isDraggable = true;
     [SerializeField] private float _toothWidth = 0.6f;
     [SerializeField] private float _toothHeight = 0.5f;
-    [SerializeField] private bool _isDraggable = true;
 
+    [Space]
     public UnityEvent<float> OnSimulate;
+
+    [Space]
+    [SerializeField] private TMP_Text _text;
+    [SerializeField] private Transform _baseScalable;
+    [SerializeField] private Transform _baseContainer;
+    [SerializeField] private Transform _toothContainer;
+    [SerializeField] private Sprite[] _toothSprites;
+
     public bool IsDraggable => _isDraggable;
 
     private CircleCollider2D _collider;
@@ -192,28 +199,66 @@ public class Gear : MonoBehaviour, IDraggable
         _collider = GetComponent<CircleCollider2D>();
         _collider.radius = (_toothWidth * _numberOfTeeth) / Mathf.PI + _toothHeight;
 
-        if (_base != null)
+        if (_baseScalable != null)
         {
-            _base.localScale = Vector3.one * 2 * (_toothWidth * _numberOfTeeth) / Mathf.PI;
+            _baseScalable.localScale = Vector3.one * 2 * (_toothWidth * _numberOfTeeth) / Mathf.PI;
         }
 
-        if (_teethContainer != null)
+
+        if (_baseContainer != null)
         {
-            for (var i = 0; i < _teethContainer.childCount; i++)
+            for (var i = 0; i < _baseContainer.childCount; i++)
             {
-                var tooth = _teethContainer.GetChild(i);
+                _baseContainer.GetChild(i)
+                    .gameObject.SetActive(false);
+            }
+
+            var currentBase = _baseContainer.GetChild(_numberOfTeeth - 1);
+            currentBase.gameObject.SetActive(true);
+
+            if (currentBase.TryGetComponent<SpriteRenderer>(out var spriteRenderer) && 
+                spriteRenderer.drawMode == SpriteDrawMode.Sliced)
+            {
+                spriteRenderer.size = Vector3.one * 2 * (_toothWidth * _numberOfTeeth) / Mathf.PI;
+            }
+        }
+
+        if (_toothContainer != null)
+        {
+            for (var i = 0; i < _toothContainer.childCount; i++)
+            {
+                var tooth = _toothContainer.GetChild(i);
                 tooth.gameObject.SetActive(false);
             }
 
             for (var i = 0; i < _numberOfTeeth; i++)
             {
-                var tooth = _teethContainer.GetChild(i);
+                var tooth = _toothContainer.GetChild(i);
                 tooth.gameObject.SetActive(true);
 
                 var angle = (360f / _numberOfTeeth) * i;
-                tooth.localPosition = Quaternion.Euler(0, 0, angle) * Vector3.up * (_collider.radius - _toothHeight / 2);
-                tooth.localRotation = Quaternion.Euler(0, 0, angle);
-                tooth.localScale = new Vector3(_toothWidth, _toothHeight, 1);
+
+                var radius = _collider.radius - _toothHeight;
+                var localPosition = Quaternion.Euler(0, 0, angle) * Vector3.up * radius;
+                localPosition.z = tooth.localPosition.z;
+
+                tooth.localPosition = localPosition;
+
+                tooth.localRotation = Quaternion.Euler(0, 0, angle + 90);
+                //tooth.localScale = new Vector3(_toothWidth, _toothHeight, 1);
+            }
+        }
+
+        if (_toothSprites != null && _toothSprites.Length > 0)
+        {
+            for (var i = 0; i < _toothContainer.childCount; i++)
+            {
+                var tooth = _toothContainer.GetChild(i);
+                if (tooth.TryGetComponent<SpriteRenderer>(out var spriteRenderer))
+                {
+                    var index = UnityEngine.Random.Range(0, _toothSprites.Length);
+                    spriteRenderer.sprite = _toothSprites[index];
+                }
             }
         }
 
