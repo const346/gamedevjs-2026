@@ -7,7 +7,7 @@ public class Motor : MonoBehaviour
 
     private void Update()
     {
-        _gear.Simulate(_gear, _speed * Time.deltaTime);
+        _gear.Simulate(null, _speed * Time.deltaTime);
     }
 
     private void OnDrawGizmos()

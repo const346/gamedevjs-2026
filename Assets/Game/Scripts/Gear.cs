@@ -9,7 +9,8 @@ public class Gear : MonoBehaviour, IDraggable
 {
     [Range(4, 24)]
     [SerializeField] private int _numberOfTeeth = 4;
-    [SerializeField] private float _quality = 1.0f;
+    [SerializeField] private float _quality = 0.99f;
+    [SerializeField] private float _guarantee = 360f;
     [SerializeField] private bool _isDraggable = true;
     [SerializeField] private float _toothWidth = 0.6f;
     [SerializeField] private float _toothHeight = 0.5f;
@@ -29,39 +30,85 @@ public class Gear : MonoBehaviour, IDraggable
     private CircleCollider2D _collider;
     private List<Gear> _contacts = new List<Gear>();
     private long _simulateFrame;
+    private float _accumulated;
 
     private void Awake()
     {
         Initialize();
     }
+
     private void OnValidate()
     {
-        Initialize();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.delayCall += () =>
+        {
+            if (this != null)
+            {
+                Initialize();
+            }
+        };
+#endif
     }
 
-    public void Simulate(Gear parent, float step)
+    public void Simulate(Gear parent, float torgue)
     {
-        if (_simulateFrame == Time.frameCount) /// TODO: broke tooth
+        var direction = Vector2.up;
+        var isEdgeContact = parent != null && !IsAxialContact(parent);
+
+        if (isEdgeContact)
         {
+            direction = parent.transform.position - transform.position;
+            torgue = torgue * -1 * parent._numberOfTeeth / _numberOfTeeth;
+        }
+
+        if (_simulateFrame == Time.frameCount)
+        {
+            BreakTooth(direction);
             return;
+        }
+        else if (_accumulated >= _guarantee && isEdgeContact)
+        {
+            var breakChance = (1 - _quality) * Mathf.Abs(torgue) / (Mathf.PI * 2);
+            if (UnityEngine.Random.value < breakChance)
+            {
+                BreakTooth(direction);
+            }
         }
 
         _simulateFrame = Time.frameCount;
+        _accumulated += Mathf.Abs(torgue);
 
-        var k = IsAxialContact(parent) ? step :
-            step * -1 * parent._numberOfTeeth / _numberOfTeeth;
-
-        transform.rotation *= Quaternion.Euler(0, 0, k);
-
-        OnSimulate?.Invoke(k);
-
+        transform.rotation *= Quaternion.Euler(0, 0, torgue);
+        OnSimulate?.Invoke(torgue);
+        
         foreach (var contact in _contacts)
         {
             if (contact != parent)
             {
-                contact.Simulate(this, k);
+                contact.Simulate(this, torgue);
             }
         }
+
+
+        //{ // debug only
+        //    for (var i = 0; i < _toothContainer.childCount; i++)
+        //    {
+        //        var tooth = _toothContainer.GetChild(i);
+        //        if (tooth.TryGetComponent<SpriteRenderer>(out var spriteRendererX))
+        //        {
+        //            spriteRendererX.color = Color.white;
+        //        }
+        //    }
+
+        //    if (parent != null)
+        //    {
+        //        var toothX = GetTooth((Vector2)(parent.transform.position - transform.position));
+        //        if (toothX.TryGetComponent<SpriteRenderer>(out var spriteRenderer))
+        //        {
+        //            spriteRenderer.color = Color.grey;
+        //        }
+        //    }
+        //}
     }
 
     private bool IsAxialContact(Gear gear)
@@ -82,6 +129,39 @@ public class Gear : MonoBehaviour, IDraggable
     public void RemoveContact(Gear gear)
     {
         _contacts.Remove(gear);
+    }
+
+    public Transform GetTooth(Vector2 direction)
+    {
+        var localDirection = Quaternion.Inverse(transform.rotation) * direction.normalized;
+        var alpha = Mathf.Atan2(localDirection.y, localDirection.x) * Mathf.Rad2Deg;
+        alpha = (alpha + 360 - 90) % 360;
+    
+        var toothAngle = 360f / _numberOfTeeth;
+        var toothIndex = Mathf.RoundToInt(alpha / toothAngle) % _numberOfTeeth;
+        return _toothContainer.GetChild(toothIndex);
+    }
+
+    public void BreakTooth(Vector2 direction)
+    {
+        var tooth = GetTooth(direction);
+        if (tooth.gameObject.activeSelf)
+        {
+            tooth.gameObject.SetActive(false);
+
+            // effect broken tooth
+            var cloneTooth = Instantiate(tooth, tooth.position, tooth.rotation, null);
+            cloneTooth.gameObject.SetActive(true);
+            Destroy(cloneTooth.gameObject, 5f);
+
+            var body = cloneTooth.gameObject.AddComponent<Rigidbody2D>();
+            var forceDirection = new Vector2(direction.y, -direction.x).normalized;
+            var forcePosition = cloneTooth.position + 
+                (Vector3) UnityEngine.Random.insideUnitCircle * 0.2f;
+            var force = forceDirection * UnityEngine.Random.Range(8, 12);
+
+            body.AddForceAtPosition(force, forcePosition, ForceMode2D.Impulse);
+        }
     }
 
     public void Drag(Vector2 position)
@@ -180,6 +260,11 @@ public class Gear : MonoBehaviour, IDraggable
 
     private void OnDrawGizmos()
     {
+        if (_collider == null)
+        {
+            _collider = GetComponent<CircleCollider2D>();
+        }
+
         Gizmos.color = Color.green;
         foreach (var gear in _contacts)
         {
@@ -214,13 +299,14 @@ public class Gear : MonoBehaviour, IDraggable
             }
 
             var currentBase = _baseContainer.GetChild(_numberOfTeeth - 1);
-            currentBase.gameObject.SetActive(true);
 
-            if (currentBase.TryGetComponent<SpriteRenderer>(out var spriteRenderer) && 
+            if (currentBase.TryGetComponent<SpriteRenderer>(out var spriteRenderer) &&
                 spriteRenderer.drawMode == SpriteDrawMode.Sliced)
             {
                 spriteRenderer.size = Vector3.one * 2 * (_toothWidth * _numberOfTeeth) / Mathf.PI;
             }
+
+            currentBase.gameObject.SetActive(true);
         }
 
         if (_toothContainer != null)
