@@ -175,87 +175,94 @@ public class Gear : MonoBehaviour, IDraggable
         _contacts.Clear();
 
         // find new contacts
-        var hits = Physics2D.OverlapCircleAll(position, _collider.radius);
-        Array.Sort(hits, (a, b) =>
-        {
-            var d1 = Vector2.Distance(position, a.transform.position);
-            var d2 = Vector2.Distance(position, b.transform.position);
-            return d1.CompareTo(d2);
-        });
-
         var result = (Vector3)position;
         var pairGear = default(Gear);
 
-        for (int i = 0; i < hits.Length; i++)
+        if (TryFindNearGear(position, out var nearGear))
         {
-            var hit = hits[i];
-            if (hit.gameObject != gameObject &&
-                hit.TryGetComponent<Gear>(out var gear))
+            var p = (Vector2)nearGear.transform.position;
+            var m = p - position;
+            var d = m.magnitude;
+
+            if (d < nearGear._collider.radius / 2f)
             {
-                var p2 = (Vector2)gear.transform.position;
-                var m = p2 - position;
-                var d = m.magnitude;
+                AddContact(nearGear);
+                nearGear.AddContact(this);
 
-                if (pairGear != null)
-                {
-                    var g1 = gear;
-                    var g2 = pairGear;
+                result = nearGear.transform.position + Vector3.back;
+            }
+            else
+            {
+                pairGear = nearGear;
 
-                    var cA = g1.transform.position;
-                    var rA = g1._collider.radius;
-                    var cB = g2.transform.position;
-                    var rB = g2._collider.radius;
+                AddContact(nearGear);
+                nearGear.AddContact(this);
 
-                    var r = _collider.radius - Mathf.Max(_toothHeight, gear._toothHeight);
+                var distance = _collider.radius + nearGear._collider.radius -
+                    Mathf.Max(_toothHeight, nearGear._toothHeight);
 
-                    if (SolveCircleV3(cA, rA, cB, rB, r, out var rp1, out var rp2))
-                    {
-                        AddContact(gear);
-                        gear.AddContact(this);
+                result = p - m.normalized * distance;
+            }
+        }
 
-                        var d1 = Vector2.Distance(result, rp1);
-                        var d2 = Vector2.Distance(result, rp2);
+        if (pairGear != null && TryFindNearGear(result, out var foundGear, g => g == pairGear))
+        {
+            var cA = foundGear.transform.position;
+            var rA = foundGear._collider.radius;
+            var cB = pairGear.transform.position;
+            var rB = pairGear._collider.radius;
+            var r = _collider.radius - Mathf.Max(_toothHeight, foundGear._toothHeight);
 
-                        result = d1 < d2 ? rp1 : rp2;
-                    }
+            if (SolveCircleV3(cA, rA, cB, rB, r, out var rp1, out var rp2))
+            {
+                AddContact(foundGear);
+                foundGear.AddContact(this);
 
-                    break;
-                }
-                else if (d < gear._collider.radius / 2f)
-                {
-                    AddContact(gear);
-                    gear.AddContact(this);
+                var d1 = ((Vector2)result - rp1).sqrMagnitude;
+                var d2 = ((Vector2)result - rp2).sqrMagnitude;
 
-                    result = gear.transform.position + Vector3.back;
-                    break;
-                }
-                else
-                {
-                    pairGear = gear;
-
-                    AddContact(gear);
-                    gear.AddContact(this);
-
-                    var distance = _collider.radius + gear._collider.radius -
-                        Mathf.Max(_toothHeight, gear._toothHeight);
-
-                    var direction = m.normalized;
-                    result = p2 - direction * distance;
-
-                    //// sync rotation
-                    //var alpha = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-                    //var thetaA = gear.transform.eulerAngles.z;
-                    //var teethA = gear._numberOfTeeth;
-                    //var teethB = _numberOfTeeth;
-
-                    //var thetaB = alpha + 90f - (180f / teethB) + (alpha - thetaA - 90f) * (teethA / teethB);
-                    //transform.rotation = Quaternion.Euler(0, 0, thetaB);
-                }
+                result = d1 < d2 ? rp1 : rp2;
             }
         }
 
         // move to position
         transform.position = result;
+    }
+
+    private bool TryFindNearGear(Vector2 position, out Gear result, Func<Gear, bool> skip = null)
+    {
+        var hits = Physics2D.OverlapCircleAll(position, _collider.radius);
+
+        Array.Sort(hits, (a, b) =>
+        {
+            if (a is CircleCollider2D cA && b is CircleCollider2D cB)
+            {
+                var dA = ((Vector2)a.transform.position - position).sqrMagnitude - cA.radius * cA.radius;
+                var dB = ((Vector2)b.transform.position - position).sqrMagnitude - cB.radius * cB.radius;
+
+                return dA.CompareTo(dB);
+            }
+
+            return 0;
+        });
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].gameObject != gameObject &&
+                hits[i].TryGetComponent<Gear>(out var gear))
+            {
+                if (skip != null && skip(gear))
+                {
+                    continue;
+                }
+
+                result = gear;
+                return true;
+            }
+        }
+
+        result = default;
+        return false;
     }
 
     private void OnDrawGizmos()
