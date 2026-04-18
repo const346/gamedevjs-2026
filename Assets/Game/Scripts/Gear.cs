@@ -25,7 +25,11 @@ public class Gear : MonoBehaviour, IDraggable
     [SerializeField] private Transform _toothContainer;
     [SerializeField] private Sprite[] _toothSprites;
 
-    public bool IsDraggable => _isDraggable;
+    public bool IsDraggable
+    {
+        get => _isDraggable;
+        set => _isDraggable = value;
+    }
 
     private CircleCollider2D _collider;
     private List<Gear> _contacts = new List<Gear>();
@@ -48,6 +52,12 @@ public class Gear : MonoBehaviour, IDraggable
             }
         };
 #endif
+    }
+
+    public void Randomize()
+    {
+        _numberOfTeeth = UnityEngine.Random.Range(8, 24);
+        Initialize();
     }
 
     public void Simulate(Gear parent, float torgue)
@@ -118,6 +128,17 @@ public class Gear : MonoBehaviour, IDraggable
             gear.transform.position.y == transform.position.y;
     }
 
+    public IEnumerator<Gear> GetAxialContacts()
+    {
+        foreach (var contact in _contacts)
+        {
+            if (IsAxialContact(contact))
+            {
+                yield return contact;
+            }
+        }
+    }
+
     public void AddContact(Gear gear)
     {
         if (!_contacts.Contains(gear))
@@ -184,7 +205,7 @@ public class Gear : MonoBehaviour, IDraggable
             var m = p - position;
             var d = m.magnitude;
 
-            if (d < nearGear._collider.radius / 2f)
+            if (d < nearGear._collider.radius * 0.9f)
             {
                 AddContact(nearGear);
                 nearGear.AddContact(this);
@@ -237,8 +258,11 @@ public class Gear : MonoBehaviour, IDraggable
         {
             if (a is CircleCollider2D cA && b is CircleCollider2D cB)
             {
-                var dA = ((Vector2)a.transform.position - position).sqrMagnitude - cA.radius * cA.radius;
-                var dB = ((Vector2)b.transform.position - position).sqrMagnitude - cB.radius * cB.radius;
+                //var dA = ((Vector2)a.transform.position - position).sqrMagnitude - cA.radius * cA.radius;
+                //var dB = ((Vector2)b.transform.position - position).sqrMagnitude - cB.radius * cB.radius;
+
+                var dA = ((Vector2)a.transform.position - position).sqrMagnitude;
+                var dB = ((Vector2)b.transform.position - position).sqrMagnitude;
 
                 return dA.CompareTo(dB);
             }
