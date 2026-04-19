@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
 
 [RequireComponent(typeof(CircleCollider2D))]
 public class Gear : MonoBehaviour, IDraggable
@@ -19,6 +20,7 @@ public class Gear : MonoBehaviour, IDraggable
     public UnityEvent<float> OnSimulate;
 
     [Space]
+    [SerializeField] private SortingGroup _sortingGroup;
     [SerializeField] private TMP_Text _text;
     [SerializeField] private Transform _baseScalable;
     [SerializeField] private Transform _baseContainer;
@@ -30,6 +32,9 @@ public class Gear : MonoBehaviour, IDraggable
         get => _isDraggable;
         set => _isDraggable = value;
     }
+
+    public int DragPriority => 
+        _sortingGroup.sortingOrder;
 
     private CircleCollider2D _collider;
     private List<Gear> _contacts = new List<Gear>();
@@ -56,7 +61,7 @@ public class Gear : MonoBehaviour, IDraggable
 
     public void Randomize()
     {
-        _numberOfTeeth = UnityEngine.Random.Range(8, 24);
+        _numberOfTeeth = 6 + UnityEngine.Random.Range(0, 4) * 4;
         Initialize();
     }
 
@@ -98,27 +103,6 @@ public class Gear : MonoBehaviour, IDraggable
                 contact.Simulate(this, torgue);
             }
         }
-
-
-        //{ // debug only
-        //    for (var i = 0; i < _toothContainer.childCount; i++)
-        //    {
-        //        var tooth = _toothContainer.GetChild(i);
-        //        if (tooth.TryGetComponent<SpriteRenderer>(out var spriteRendererX))
-        //        {
-        //            spriteRendererX.color = Color.white;
-        //        }
-        //    }
-
-        //    if (parent != null)
-        //    {
-        //        var toothX = GetTooth((Vector2)(parent.transform.position - transform.position));
-        //        if (toothX.TryGetComponent<SpriteRenderer>(out var spriteRenderer))
-        //        {
-        //            spriteRenderer.color = Color.grey;
-        //        }
-        //    }
-        //}
     }
 
     private bool IsAxialContact(Gear gear)
@@ -128,7 +112,7 @@ public class Gear : MonoBehaviour, IDraggable
             gear.transform.position.y == transform.position.y;
     }
 
-    public IEnumerator<Gear> GetAxialContacts()
+    public IEnumerable<Gear> GetAxialContacts()
     {
         foreach (var contact in _contacts)
         {
@@ -137,6 +121,25 @@ public class Gear : MonoBehaviour, IDraggable
                 yield return contact;
             }
         }
+    }
+
+    public bool IsAxialExist(int numberOfTeeth)
+    {
+        if (numberOfTeeth == _numberOfTeeth)
+        {
+            return true;
+        }
+
+        foreach (var contact in _contacts)
+        {
+            if (IsAxialContact(contact) && 
+                contact._numberOfTeeth == numberOfTeeth)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void AddContact(Gear gear)
@@ -205,12 +208,13 @@ public class Gear : MonoBehaviour, IDraggable
             var m = p - position;
             var d = m.magnitude;
 
-            if (d < nearGear._collider.radius * 0.9f)
+            if (d < nearGear._collider.radius * 0.9f && 
+                !nearGear.IsAxialExist(_numberOfTeeth))
             {
                 AddContact(nearGear);
                 nearGear.AddContact(this);
 
-                result = nearGear.transform.position + Vector3.back;
+                result = nearGear.transform.position;
             }
             else
             {
@@ -304,10 +308,18 @@ public class Gear : MonoBehaviour, IDraggable
                 Gizmos.DrawLine(transform.position, gear.transform.position);
             }
         }
-        Gizmos.color = Color.aliceBlue;
-        Gizmos.DrawWireSphere(transform.position, _collider.radius - _toothHeight); 
-        Gizmos.color = Color.antiqueWhite;
-        Gizmos.DrawWireSphere(transform.position, _collider.radius);
+
+        for (int i = 0; i < _numberOfTeeth; i++)
+        {
+            var angle = (360f / _numberOfTeeth) * i;
+            var direction = transform.rotation * Quaternion.Euler(0, 0, angle) * Vector3.up;
+
+            var p1 = transform.position + direction * (_collider.radius - _toothHeight);
+            var p2 = transform.position + direction * _collider.radius;
+
+            Gizmos.color = Color.beige;
+            Gizmos.DrawLine(p1, p2);
+        }
     }
 
     private void Initialize()
@@ -373,7 +385,8 @@ public class Gear : MonoBehaviour, IDraggable
                 var tooth = _toothContainer.GetChild(i);
                 if (tooth.TryGetComponent<SpriteRenderer>(out var spriteRenderer))
                 {
-                    var index = UnityEngine.Random.Range(0, _toothSprites.Length);
+                    var rng = new System.Random(GetInstanceID() + i + _numberOfTeeth);
+                    var index = rng.Next(0, _toothSprites.Length);
                     spriteRenderer.sprite = _toothSprites[index];
                 }
             }
@@ -382,6 +395,11 @@ public class Gear : MonoBehaviour, IDraggable
         if (_text != null)
         {
             _text.text = _numberOfTeeth.ToString();
+        }
+
+        if (_sortingGroup != null)
+        {
+            _sortingGroup.sortingOrder = 100 -_numberOfTeeth;
         }
     }
 

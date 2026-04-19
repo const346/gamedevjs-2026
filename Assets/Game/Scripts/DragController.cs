@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEditor.PlayerSettings;
 
 public interface IDraggable
 {
+    int DragPriority { get; }
     bool IsDraggable { get; }
     void Drag(Vector2 position);
 }
@@ -50,37 +50,53 @@ public class DragController : MonoBehaviour,
         _camera.transform.position = pos;
     }
 
-    public void OnDrag(PointerEventData eventData)
+    public void OnDrag(PointerEventData data)
     {
         if (_isDragging)
         {
-            var worldPosition = _camera.ScreenToWorldPoint(eventData.position);
+            var worldPosition = ScreenToWorld(data.position);
             _dragObject.Drag(worldPosition + _dragOffset);
         }
         else
         {
-            DragCamera(eventData.position, eventData.delta);
+            DragCamera(data.position, data.delta);
         }
     }
 
-    public void OnPointerDown(PointerEventData eventData)
+    public void OnPointerDown(PointerEventData data)
     {
-        var worldPosition = _camera.ScreenToWorldPoint(eventData.position);
-        var hit = Physics2D.OverlapPoint(worldPosition);
-
-        if (hit != null && 
-            hit.TryGetComponent<IDraggable>(out var draggable) && 
-            draggable.IsDraggable)
+        var worldPosition = ScreenToWorld(data.position);
+        var hits = Physics2D.OverlapPointAll(worldPosition);
+        if (hits != null && hits.Length > 0)
         {
-            _isDragging = true;
-            _dragOffset = hit.transform.position - worldPosition;
-            _dragObject = draggable;
+            var priority = int.MinValue;
+            foreach (var hit in hits)
+            {
+                if (hit.TryGetComponent<IDraggable>(out var draggable) && 
+                    draggable.IsDraggable && 
+                    draggable.DragPriority > priority)
+                {
+                    priority = draggable.DragPriority;
+
+                    _isDragging = true;
+                    _dragOffset = hit.transform.position - worldPosition;
+                    _dragObject = draggable;
+                }
+            }
         }
     }
 
-    public void OnPointerUp(PointerEventData eventData)
+    public void OnPointerUp(PointerEventData data)
     {
         _isDragging = false;
         _dragObject = null;
+    }
+
+    private Vector3 ScreenToWorld(Vector2 position)
+    {
+        var cameraZ = Mathf.Abs(_camera.transform.position.z);
+        var screenPosition = new Vector3(position.x, position.y, cameraZ);
+        var worldPosition = _camera.ScreenToWorldPoint(screenPosition);
+        return worldPosition;
     }
 }
