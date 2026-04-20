@@ -36,14 +36,29 @@ public class Gear : MonoBehaviour, IDraggable
     public int DragPriority => 
         _sortingGroup.sortingOrder;
 
-    private CircleCollider2D _collider;
+    public int NumberOfTeeth => 
+        _numberOfTeeth;
+
+    private static readonly BushingManager _bushingManager = new();
     private List<Gear> _contacts = new List<Gear>();
+
+    private CircleCollider2D _collider;
     private long _simulateFrame;
     private float _accumulated;
 
     private void Awake()
     {
         Initialize();
+    }
+
+    private void OnEnable()
+    {
+        _bushingManager.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        _bushingManager.Remove(this);
     }
 
     private void OnValidate()
@@ -105,41 +120,21 @@ public class Gear : MonoBehaviour, IDraggable
         }
     }
 
+    public void Sort(int sortOffset = 0)
+    {
+        //_sortingGroup.sortingOrder = _numberOfTeeth + sortOffset;
+
+        //foreach (var contact in _contacts)
+        //{
+        //    contact.Sort(sortOffset);
+        //}
+    }
+
     private bool IsAxialContact(Gear gear)
     {
-        return _contacts.Contains(gear) && 
-            gear.transform.position.x == transform.position.x && 
+        return _contacts.Contains(gear) &&
+            gear.transform.position.x == transform.position.x &&
             gear.transform.position.y == transform.position.y;
-    }
-
-    public IEnumerable<Gear> GetAxialContacts()
-    {
-        foreach (var contact in _contacts)
-        {
-            if (IsAxialContact(contact))
-            {
-                yield return contact;
-            }
-        }
-    }
-
-    public bool IsAxialExist(int numberOfTeeth)
-    {
-        if (numberOfTeeth == _numberOfTeeth)
-        {
-            return true;
-        }
-
-        foreach (var contact in _contacts)
-        {
-            if (IsAxialContact(contact) && 
-                contact._numberOfTeeth == numberOfTeeth)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public void AddContact(Gear gear)
@@ -198,9 +193,17 @@ public class Gear : MonoBehaviour, IDraggable
 
         _contacts.Clear();
 
+        _bushingManager.Remove(this);
+
         // find new contacts
         var result = (Vector3)position;
         var pairGear = default(Gear);
+
+        for (var i = 0f; i < 360f; i+= 22.5f)
+        {
+            var direction = Quaternion.Euler(0, 0, i) * Vector3.up;
+            Debug.DrawRay(position, direction * _collider.radius, Color.indianRed);
+        }
 
         if (TryFindNearGear(position, out var nearGear))
         {
@@ -208,8 +211,13 @@ public class Gear : MonoBehaviour, IDraggable
             var m = p - position;
             var d = m.magnitude;
 
-            if (d < nearGear._collider.radius * 0.9f && 
-                !nearGear.IsAxialExist(_numberOfTeeth))
+            Debug.DrawRay(nearGear.transform.position, Vector3.up * nearGear._collider.radius, Color.red, 1f);
+
+            var smallerGear = _bushingManager.Min(p);
+            Debug.DrawRay(smallerGear.transform.position, Vector3.left * smallerGear._collider.radius, Color.blue, 1f);
+
+            if (d < smallerGear._collider.radius * 0.8f && 
+                !_bushingManager.IsExist(p, _numberOfTeeth))
             {
                 AddContact(nearGear);
                 nearGear.AddContact(this);
@@ -252,6 +260,12 @@ public class Gear : MonoBehaviour, IDraggable
 
         // move to position
         transform.position = result;
+
+
+        _bushingManager.Add(this);
+
+        // ...
+        Sort();
     }
 
     private bool TryFindNearGear(Vector2 position, out Gear result, Func<Gear, bool> skip = null)
@@ -262,11 +276,11 @@ public class Gear : MonoBehaviour, IDraggable
         {
             if (a is CircleCollider2D cA && b is CircleCollider2D cB)
             {
-                //var dA = ((Vector2)a.transform.position - position).sqrMagnitude - cA.radius * cA.radius;
-                //var dB = ((Vector2)b.transform.position - position).sqrMagnitude - cB.radius * cB.radius;
+                var qA = (Vector2)a.transform.position - position;
+                var qB = (Vector2)b.transform.position - position;
 
-                var dA = ((Vector2)a.transform.position - position).sqrMagnitude;
-                var dB = ((Vector2)b.transform.position - position).sqrMagnitude;
+                var dA = Mathf.Abs(qA.magnitude - cA.radius);
+                var dB = Mathf.Abs(qB.magnitude - cB.radius);
 
                 return dA.CompareTo(dB);
             }
@@ -309,6 +323,8 @@ public class Gear : MonoBehaviour, IDraggable
             }
         }
 
+        Vector3? first = null;
+        Vector3? prev = null;
         for (int i = 0; i < _numberOfTeeth; i++)
         {
             var angle = (360f / _numberOfTeeth) * i;
@@ -317,8 +333,26 @@ public class Gear : MonoBehaviour, IDraggable
             var p1 = transform.position + direction * (_collider.radius - _toothHeight);
             var p2 = transform.position + direction * _collider.radius;
 
-            Gizmos.color = Color.beige;
+            Gizmos.color = Color.white;
             Gizmos.DrawLine(p1, p2);
+
+            if (prev != null)
+            {
+                Gizmos.color = Color.whiteSmoke;
+                Gizmos.DrawLine(prev.Value, p1);
+            }
+            else
+            {
+                first = p1;
+            }    
+
+            prev = p1;
+        }
+
+        if (first != null && prev != null)
+        {
+            Gizmos.color = Color.whiteSmoke;
+            Gizmos.DrawLine(first.Value, prev.Value);
         }
     }
 
@@ -374,7 +408,6 @@ public class Gear : MonoBehaviour, IDraggable
                 tooth.localPosition = localPosition;
 
                 tooth.localRotation = Quaternion.Euler(0, 0, angle + 90);
-                //tooth.localScale = new Vector3(_toothWidth, _toothHeight, 1);
             }
         }
 
@@ -433,5 +466,62 @@ public class Gear : MonoBehaviour, IDraggable
         p2 = P - perp * h;
 
         return true;
+    }
+}
+
+
+public class BushingManager
+{
+    public List<Gear> Gears = new();
+
+    public void Add(Gear gear)
+    {
+        Gears.Add(gear);
+    }
+
+    public void Remove(Gear gear)
+    {
+        Gears.Remove(gear);
+    }
+
+    public IEnumerable<Gear> Get(Vector2 position)
+    {
+        foreach (var gear in Gears)
+        {
+            if (gear.transform.position.x == position.x &&
+                gear.transform.position.y == position.y)
+            {
+                yield return gear;
+            }
+        }
+    }
+
+    public bool IsExist(Vector2 position, int numberOfTeeth)
+    {
+        foreach (var gear in Get(position))
+        {
+            if (gear.NumberOfTeeth == numberOfTeeth)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Gear Min(Vector2 position)
+    {
+        var min = int.MaxValue;
+        var result = default(Gear);
+
+        foreach (var gear in Get(position))
+        {
+            if (gear.NumberOfTeeth < min)
+            {
+                min = gear.NumberOfTeeth;
+                result = gear;
+            }
+        }
+
+        return result;
     }
 }

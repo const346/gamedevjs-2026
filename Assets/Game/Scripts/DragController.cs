@@ -11,43 +11,38 @@ public interface IDraggable
 public class DragController : MonoBehaviour,
     IPointerDownHandler,
     IPointerUpHandler,
-    IDragHandler
+    IDragHandler,
+    IPointerClickHandler
 {
     [SerializeField] private Camera _camera;
+    [SerializeField] private CameraController2D _cameraController;
+    [SerializeField] private Player _player;
 
+    private bool _ignoreClick;
     private bool _isDragging;
     private Vector3 _dragOffset;
     private IDraggable _dragObject;
 
-    private void DragCamera(Vector2 screenPosition, Vector2 delta)
+    public void OnPointerClick(PointerEventData data)
     {
-        var prevScreenPosition = screenPosition - delta;
-        var z = Mathf.Abs(_camera.transform.position.z);
+        if (_ignoreClick)
+        {
+            Debug.Log("OnPointerClick | _ignoreClick");
+            return; 
+        }
 
-        var prevWorld = _camera.ScreenToWorldPoint(new Vector3(prevScreenPosition.x, prevScreenPosition.y, z));
-        var currentWorld = _camera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, z));
-        var move = prevWorld - currentWorld;
+        if (Vector2.Distance(data.pressPosition, data.position) > 10f)
+        {
+            Debug.Log("OnPointerClick | Distance");
 
-        move.y = 0; // Lock vertical movement
+            return;
+        }
 
-        _camera.transform.position += move;
+        var worldPosition = ScreenToWorld(data.position);
+        worldPosition.y = 0;
+        worldPosition.z = 0;
 
-        // Clamp camera position to bounds
-        var bottomLeft = _camera.ViewportToWorldPoint(new Vector3(0, 0, z));
-        var topRight = _camera.ViewportToWorldPoint(new Vector3(1, 1, z));
-
-        var camHalfWidth = (topRight.x - bottomLeft.x) * 0.5f;
-        var camHalfHeight = (topRight.y - bottomLeft.y) * 0.5f;
-
-        var minBounds = new Vector2(-50, -100);
-        var maxBounds = new Vector2(50, 100); 
-
-        var pos = _camera.transform.position;
-
-        pos.x = Mathf.Clamp(pos.x, minBounds.x + camHalfWidth, maxBounds.x - camHalfWidth);
-        pos.y = Mathf.Clamp(pos.y, minBounds.y + camHalfHeight, maxBounds.y - camHalfHeight);
-
-        _camera.transform.position = pos;
+        _player.MoveTo(worldPosition);
     }
 
     public void OnDrag(PointerEventData data)
@@ -59,7 +54,7 @@ public class DragController : MonoBehaviour,
         }
         else
         {
-            DragCamera(data.position, data.delta);
+            _cameraController.Drag(data.position, data.delta);
         }
     }
 
@@ -79,17 +74,25 @@ public class DragController : MonoBehaviour,
                     priority = draggable.DragPriority;
 
                     _isDragging = true;
+
                     _dragOffset = hit.transform.position - worldPosition;
                     _dragObject = draggable;
                 }
             }
         }
+
+        _ignoreClick = Mathf.Abs(_cameraController.Velocity.x) > 10f;
+
+        _cameraController.IsDragging = true;
+        _cameraController.ClearInertia();
     }
 
     public void OnPointerUp(PointerEventData data)
     {
         _isDragging = false;
         _dragObject = null;
+
+        _cameraController.IsDragging = false;
     }
 
     private Vector3 ScreenToWorld(Vector2 position)
