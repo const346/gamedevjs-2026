@@ -15,6 +15,7 @@ public class Gear : MonoBehaviour, IDraggable
     [SerializeField] private bool _isDraggable = true;
     [SerializeField] private float _toothWidth = 0.6f;
     [SerializeField] private float _toothHeight = 0.5f;
+    [SerializeField] private int _seek;
 
     [Space]
     public UnityEvent<float> OnSimulate;
@@ -25,6 +26,7 @@ public class Gear : MonoBehaviour, IDraggable
     [SerializeField] private Transform _baseScalable;
     [SerializeField] private Transform _baseContainer;
     [SerializeField] private Transform _toothContainer;
+    [Space]
     [SerializeField] private Sprite[] _toothSprites;
 
     public bool IsDraggable
@@ -77,6 +79,8 @@ public class Gear : MonoBehaviour, IDraggable
     public void Randomize()
     {
         _numberOfTeeth = 6 + UnityEngine.Random.Range(0, 4) * 4;
+        _seek = UnityEngine.Random.Range(0, 100000);
+
         Initialize();
     }
 
@@ -418,7 +422,7 @@ public class Gear : MonoBehaviour, IDraggable
                 var tooth = _toothContainer.GetChild(i);
                 if (tooth.TryGetComponent<SpriteRenderer>(out var spriteRenderer))
                 {
-                    var rng = new System.Random(GetInstanceID() + i + _numberOfTeeth);
+                    var rng = new System.Random(_seek + i + _numberOfTeeth);
                     var index = rng.Next(0, _toothSprites.Length);
                     spriteRenderer.sprite = _toothSprites[index];
                 }
