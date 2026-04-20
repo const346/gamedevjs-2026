@@ -2611,7 +2611,6 @@ GameObject:
   m_Component:
   - component: {fileID: 360317030}
   - component: {fileID: 360317033}
-  - component: {fileID: 360317032}
   - component: {fileID: 360317031}
   m_Layer: 0
   m_Name: WaterCamera
@@ -2679,14 +2678,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!81 &360317032
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 360317029}
-  m_Enabled: 1
 --- !u!20 &360317033
 Camera:
   m_ObjectHideFlags: 0
@@ -2696,7 +2687,7 @@ Camera:
   m_GameObject: {fileID: 360317029}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
