@@ -49,7 +49,12 @@ public class Shop : MonoBehaviour
         var spawnEnd = transform.position + (Vector3)_spawnEnd;
 
         _currentGear = Instantiate(gearPrefab, spawnStart, Quaternion.identity);
-        _currentGear.Randomize();
+
+        var seek = Random.Range(0, 100000);
+        var numberOfTeeth = 6 + Random.Range(0, 4) * 4;
+        var brokenTeethRatio = Random.value > 0.7f ? Random.value * 0.5f : 0;
+
+        _currentGear.Rebuild(seek, numberOfTeeth, brokenTeethRatio);
         _currentGear.IsDraggable = false;
 
         for (var t = 0f; t < 1f; t += Time.deltaTime * 0.3f)
@@ -66,4 +71,6 @@ public class Shop : MonoBehaviour
 
         _isSpawning = false;
     }
+
+    
 }
