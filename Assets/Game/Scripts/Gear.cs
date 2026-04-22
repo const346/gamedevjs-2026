@@ -436,11 +436,6 @@ public class Gear : MonoBehaviour, IDraggable
                 }
             }
         }
-
-        //if (_sortingGroup != null)
-        //{
-        //    _sortingGroup.sortingOrder = 0;
-        //}
     }
 
 #if UNITY_EDITOR

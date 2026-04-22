@@ -206,7 +206,7 @@ Transform:
   m_GameObject: {fileID: 6400368794686594767}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.02246, y: 10.07821, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -273,6 +273,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   _animator: {fileID: 4344319180485100677}
+  _thrower: {fileID: -4605508149135930718}
   _target: {fileID: 0}
   _speed: 5
   _attackHeight: 1.3
@@ -292,7 +293,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 781193cbd9d554a4583bea4cda785895, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Thrower
-  _bulletPrefab: {fileID: 2968705137481145955, guid: 288f7cfe022a8a8468661096344f8c2e, type: 3}
+  _bulletPrefab: {fileID: -4601973697588844153, guid: 288f7cfe022a8a8468661096344f8c2e, type: 3}
   _spawnAnchor: {fileID: 1726562255955975793}
   _destroyDelay: 10
 --- !u!1 &6858585157421047040

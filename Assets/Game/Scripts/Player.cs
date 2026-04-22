@@ -4,6 +4,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     [SerializeField] private Animator _animator;
+    [SerializeField] private Thrower _thrower;
     [SerializeField] private Transform _target;
     [SerializeField] private float _speed = 5f;
     [Space]
@@ -40,7 +41,7 @@ public class Player : MonoBehaviour
                 var target = _target.transform.position.x;
                 yield return MoveAction(target);
             }
-            else if (TryLookAroundEnemy(out var foundEnemy))
+            else if (TryDetectEnemy(out var foundEnemy))
             {
                 var target = foundEnemy.transform.position.x;
                 var m = target - transform.position.x;
@@ -62,7 +63,7 @@ public class Player : MonoBehaviour
                     yield return AttackAction(foundEnemy);
                 }
             }
-            else if (TryLookAroundCoin(out var foundCoin) &&
+            else if (TryDetectCoin(out var foundCoin) &&
                 _lastMoveTime > Random.Range(0.25f, 1f))
             {
                 var target = foundCoin.transform.position.x;
@@ -98,7 +99,7 @@ public class Player : MonoBehaviour
                 yield break;
             }
 
-            if (TryLookAroundEnemy(out var foundEnemy, 
+            if (TryDetectEnemy(out var foundEnemy, 
                 _retreatDistance * -Mathf.Sign(m)))
             {
                 Debug.DrawLine(transform.position, foundEnemy.transform.position, Color.blue, 2);
@@ -135,16 +136,14 @@ public class Player : MonoBehaviour
 
         if (enemy != null)
         {
-            var thrower = GetComponent<Thrower>();
-
             var height = Random.Range(_attackHeight * 0.5f, _attackHeight * 2f);
-            thrower.Throw(enemy.transform.position.x, enemy.Velocity, height);
+            _thrower.Throw(enemy.transform.position.x, enemy.Velocity, height);
 
             yield return new WaitForSeconds(0.2f);
         }
     }
 
-    private bool TryLookAroundEnemy(out Enemy foundEnemy, float look = 0)
+    private bool TryDetectEnemy(out Enemy foundEnemy, float look = 0)
     {
         var lookArea = new Vector2(_lookDistance * 2, 0.5f);
         var lookOffset = Vector3.zero;
@@ -177,7 +176,7 @@ public class Player : MonoBehaviour
         return false;
     }
 
-    private bool TryLookAroundCoin(out Coin foundCoin)
+    private bool TryDetectCoin(out Coin foundCoin)
     {
         var lookArea = new Vector2(_lookDistance * 2, 0.5f);
         var hits = Physics2D.OverlapBoxAll(transform.position, lookArea, 0);

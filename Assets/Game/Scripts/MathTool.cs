@@ -59,4 +59,24 @@ public static class MathTool
         if (x > 0.5f) x -= 1f;  // [-0.5, 0.5]
         return x;
     }
+
+    public static Vector2 Aim(float start, float target, float velocity, float gravity, float height)
+    {
+        var vy = Mathf.Sqrt(2f * gravity * height);
+        var time = (vy / gravity) * 2f;
+
+        for (int i = 0; i < 3; i++)
+        {
+            var futureX = target + velocity * time;
+            var vx = (futureX - start) / time;
+
+            var newTime = (futureX - start) / vx;
+            time = newTime;
+        }
+
+        var finalFutureX = target + velocity * time;
+        var finalVx = (finalFutureX - start) / time;
+
+        return new Vector2(finalVx, vy);
+    }
 }
