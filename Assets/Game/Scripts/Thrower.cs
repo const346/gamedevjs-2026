@@ -20,18 +20,30 @@ public class Thrower : MonoBehaviour
         bullet.transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
-    public Vector2 Aim(Vector2 start, Vector2 target, float height)
+    public void Throw(float target, float velocity, float height)
     {
-        var g = Physics2D.gravity.y * -1;
-        var apexY = Mathf.Max(start.y, target.y) + height;
-        var vy = Mathf.Sqrt(2f * g * (apexY - start.y));
+        var force = Aim(transform.position.x, target, velocity, height);
+        Throw(force);
+    }
 
-        var timeUp = vy / g;
-        var timeDown = Mathf.Sqrt(2f * (apexY - target.y) / g);
-        var totalTime = timeUp + timeDown;
+    public static Vector2 Aim(float start, float target, float velocity, float height)
+    {
+        var g = -Physics2D.gravity.y;
+        var vy = Mathf.Sqrt(2f * g * height);
+        var time = (vy / g) * 2f;
 
-        var vx = (target.x - start.x) / totalTime;
+        for (int i = 0; i < 3; i++)
+        {
+            var futureX = target + velocity * time;
+            var vx = (futureX - start) / time;
 
-        return new Vector2(vx, vy);
+            var newTime = (futureX - start) / vx;
+            time = newTime;
+        }
+
+        var finalFutureX = target + velocity * time;
+        var finalVx = (finalFutureX - start) / time;
+
+        return new Vector2(finalVx, vy);
     }
 }

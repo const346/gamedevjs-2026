@@ -27,14 +27,11 @@ public class DragController : MonoBehaviour,
     {
         if (_ignoreClick)
         {
-            Debug.Log("OnPointerClick | _ignoreClick");
             return; 
         }
 
         if (Vector2.Distance(data.pressPosition, data.position) > 10f)
         {
-            Debug.Log("OnPointerClick | Distance");
-
             return;
         }
 

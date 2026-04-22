@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -7,15 +6,12 @@ public class Player : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private Transform _target;
     [SerializeField] private float _speed = 5f;
-
-    [SerializeField] private Vector2 _visionArea = new Vector2(16, 0.2f);
-
-    [SerializeField] private float _aimHeight = 1.3f;
-    [SerializeField] private float _aimForce = 0.9f;
-
+    [Space]
+    [SerializeField] private float _attackHeight = 1.3f;
+    [Space]
+    [SerializeField] private float _lookDistance = 12;
     [SerializeField] private float _retreatDistance = 6;
-    [SerializeField] private float _waypointRadius = 4f;
-
+    [SerializeField] private float _waypointDistance = 4;
     [Space]
     [SerializeField] private float _coins = 0f;
 
@@ -46,8 +42,6 @@ public class Player : MonoBehaviour
             }
             else if (TryLookAroundEnemy(out var foundEnemy))
             {
-                Debug.DrawLine(transform.position, foundEnemy.transform.position, Color.red, 2);
-
                 var target = foundEnemy.transform.position.x;
                 var m = target - transform.position.x;
                 var s = Mathf.Sign(m);
@@ -62,7 +56,10 @@ public class Player : MonoBehaviour
                 }
                 else
                 {
-                    yield return AttackAction(target);
+                    Debug.DrawLine(transform.position, foundEnemy.transform.position, Color.red, 2);
+
+                    UpdateDirection(target);
+                    yield return AttackAction(foundEnemy);
                 }
             }
             else if (TryLookAroundCoin(out var foundCoin) &&
@@ -73,12 +70,12 @@ public class Player : MonoBehaviour
             }
             else if (Time.time - _lastMoveTime > Random.Range(7f, 15f))
             {
-                var range = Random.Range(-_waypointRadius, _waypointRadius);
+                var range = Random.Range(-_waypointDistance, _waypointDistance);
                 var target = _target.transform.position.x + range;
 
                 yield return MoveAction(target);
             }
-            else if (Mathf.Abs(_target.position.x - transform.position.x) > _waypointRadius * 1.5f &&
+            else if (Mathf.Abs(_target.position.x - transform.position.x) > _waypointDistance * 1.5f &&
                 Time.time - _lastMoveTime > 1)
             {
                 yield return MoveAction(_target.position.x);
@@ -98,6 +95,14 @@ public class Player : MonoBehaviour
 
             if (d < 0.01f || _breakAction)
             {
+                yield break;
+            }
+
+            if (TryLookAroundEnemy(out var foundEnemy, 
+                _retreatDistance * -Mathf.Sign(m)))
+            {
+                Debug.DrawLine(transform.position, foundEnemy.transform.position, Color.blue, 2);
+
                 yield break;
             }
 
@@ -124,22 +129,33 @@ public class Player : MonoBehaviour
         }
     }
 
-    private IEnumerator AttackAction(float target)
+    private IEnumerator AttackAction(Enemy enemy)
     {
-        UpdateDirection(target);
+        yield return new WaitForSeconds(1f);
 
-        yield return new WaitForSeconds(0.6f);
+        if (enemy != null)
+        {
+            var thrower = GetComponent<Thrower>();
 
-        var thrower = GetComponent<Thrower>();
-        var force = thrower.Aim(transform.position, new Vector2(target, 0), _aimHeight);
-        thrower.Throw(force * _aimForce);
+            var height = Random.Range(_attackHeight * 0.5f, _attackHeight * 2f);
+            thrower.Throw(enemy.transform.position.x, enemy.Velocity, height);
 
-        yield return new WaitForSeconds(0.6f);
+            yield return new WaitForSeconds(0.2f);
+        }
     }
 
-    private bool TryLookAroundEnemy(out Enemy foundEnemy)
+    private bool TryLookAroundEnemy(out Enemy foundEnemy, float look = 0)
     {
-        var hits = Physics2D.OverlapBoxAll(transform.position, _visionArea, 0);
+        var lookArea = new Vector2(_lookDistance * 2, 0.5f);
+        var lookOffset = Vector3.zero;
+
+        if (look != 0)
+        {
+            lookArea.x = Mathf.Abs(look);
+            lookOffset.x = look / 2 * -1;
+        }
+
+        var hits = Physics2D.OverlapBoxAll(transform.position + lookOffset, lookArea, 0);
 
         System.Array.Sort(hits, (a, b) =>
         {
@@ -163,7 +179,8 @@ public class Player : MonoBehaviour
 
     private bool TryLookAroundCoin(out Coin foundCoin)
     {
-        var hits = Physics2D.OverlapBoxAll(transform.position, _visionArea, 0);
+        var lookArea = new Vector2(_lookDistance * 2, 0.5f);
+        var hits = Physics2D.OverlapBoxAll(transform.position, lookArea, 0);
 
         foreach (var hit in hits)
         {
@@ -188,8 +205,8 @@ public class Player : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        var h = Vector3.right * _visionArea.x / 2;
-        var v = Vector3.up * _visionArea.y / 2;
+        var h = Vector3.right * _lookDistance;
+        var v = Vector3.up * 0.25f;
 
         var p1 = transform.position + h + v;
         var p2 = transform.position - h + v;

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -11,8 +10,10 @@ public class Enemy : MonoBehaviour
 
     private bool _breakAction;
     private bool _isRetreat;
-    private float _lastMoveTime;
-    
+    private float _speedScaler = 1;
+
+    public float Velocity { get; private set; }
+
     public void OnDamage()
     {
         SpawnReward();
@@ -76,11 +77,13 @@ public class Enemy : MonoBehaviour
 
     private IEnumerator MoveAction(float target)
     {
+        _speedScaler = UnityEngine.Random.Range(0.8f, 1.2f);
+
         while (true)
         {
             var m = target - transform.position.x;
             var d = Mathf.Abs(m);
-            var v = Mathf.Sign(m) * _speed;
+            var v = Mathf.Sign(m) * _speed * _speedScaler;
 
             if (d < 0.01f || _breakAction)
             {
@@ -93,7 +96,8 @@ public class Enemy : MonoBehaviour
             s = Mathf.Clamp(s, -d, d);
 
             transform.position += Vector3.right * s;
-            _lastMoveTime = Time.time;
+
+            Velocity = v;
 
             yield return null;
         }
