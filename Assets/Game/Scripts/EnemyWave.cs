@@ -24,7 +24,7 @@ public class EnemyWave : MonoBehaviour, IGameTask
         public int Count;
     }
 
-    public IEnumerator Running()
+    public IEnumerator Running(EnemyTarget enemyTarget)
     {
         Debug.Log($"ENEMY WAVE | {name} | START");
 
@@ -42,6 +42,8 @@ public class EnemyWave : MonoBehaviour, IGameTask
         foreach (var enemyPrefab in enemyPrefabs)
         {
             var enemy = Instantiate(enemyPrefab, transform.position, Quaternion.identity);
+            enemy.AttackTo(enemyTarget);
+
             enemies.Add(enemy);
 
             var delay = Random.Range(_spawnMinInterval, _spawnMaxInterval);
@@ -51,27 +53,30 @@ public class EnemyWave : MonoBehaviour, IGameTask
         Debug.Log($"ENEMY WAVE | {name} | ATTACK");
 
         var breakTime = Time.time + _attackDuration;
-        yield return new WaitUntil(() => enemies.Count(x => x != null) <= 0 || Time.time >= breakTime);
+        yield return new WaitUntil(() => enemies.Count(x => x != null) <= 0 || Time.time >= breakTime || !enemyTarget.IsLive);
 
-        if (enemies.Any(x => x != null))
+        if (enemyTarget.IsLive)
         {
-            Debug.Log($"ENEMY WAVE | {name} | RETREAT");
-
-            foreach (var enemy in enemies)
+            if (enemies.Any(x => x != null))
             {
-                enemy.Retreat();
+                Debug.Log($"ENEMY WAVE | {name} | RETREAT");
+
+                foreach (var enemy in enemies)
+                {
+                    enemy.Retreat();
+                }
+
+                breakTime = Time.time + _retreatDuration;
+                yield return new WaitUntil(() => !enemies.Any(x => x != null) || Time.time >= breakTime);
+
+                foreach (var enemy in enemies.Where(x => x != null))
+                {
+                    Destroy(enemy.gameObject);
+                }
             }
 
-            breakTime = Time.time + _retreatDuration;
-            yield return new WaitUntil(() => !enemies.Any(x => x != null) || Time.time >= breakTime);
-
-            foreach (var enemy in enemies.Where(x => x != null))
-            {
-                Destroy(enemy.gameObject);
-            }
+            Debug.Log($"ENEMY WAVE | {name} | END");
+            yield return new WaitForSeconds(_endDelay);
         }
-
-        Debug.Log($"ENEMY WAVE | {name} | END");
-        yield return new WaitForSeconds(_endDelay);
     }
 }

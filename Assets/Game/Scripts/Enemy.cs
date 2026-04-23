@@ -11,6 +11,7 @@ public class Enemy : MonoBehaviour
     private bool _breakAction;
     private bool _isRetreat;
     private float _speedScaler = 1;
+    private EnemyTarget _target;
 
     public float Velocity { get; private set; }
 
@@ -29,7 +30,7 @@ public class Enemy : MonoBehaviour
 
             if (obj.TryGetComponent<Rigidbody2D>(out var body))
             {
-                var rand = UnityEngine.Random.Range(-2f, 2f);
+                var rand = Random.Range(-2f, 2f);
                 body.AddForce(Vector2.up * 5 + Vector2.right * rand, ForceMode2D.Impulse);
             }
 
@@ -42,6 +43,11 @@ public class Enemy : MonoBehaviour
         _isRetreat = true;
     }
 
+    public void AttackTo(EnemyTarget target)
+    {
+        _target = target;
+    }
+
     private void Start()
     {
         StartCoroutine(UpdateAgent());
@@ -49,22 +55,17 @@ public class Enemy : MonoBehaviour
 
     private IEnumerator UpdateAgent()
     {
-        var motor = FindAnyObjectByType<Motor>();
-
-        var damageArea = 2f;
-        var damagePosition = motor.transform.position;
-        var homePosition = new Vector3(-50, 0, 0);
+        var homePosition = transform.position;
 
         while (true)
         {
             if (!_isRetreat)
             {
-                var target = damagePosition.x;
-                target += UnityEngine.Random.Range(-damageArea, damageArea);
+                var targetPosition = _target.transform.position.x;
+                targetPosition += Random.Range(-_target.DamageArea, _target.DamageArea);
 
-                yield return MoveAction(target);
-
-                yield return new WaitForSeconds(2);
+                yield return MoveAction(targetPosition);
+                yield return AttackAction(_target);
             }
             else
             {
@@ -77,7 +78,7 @@ public class Enemy : MonoBehaviour
 
     private IEnumerator MoveAction(float target)
     {
-        _speedScaler = UnityEngine.Random.Range(0.8f, 1.2f);
+        _speedScaler = Random.Range(0.8f, 1.2f);
 
         while (true)
         {
@@ -103,11 +104,13 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    private IEnumerator AttackAction(float target)
+    private IEnumerator AttackAction(EnemyTarget target)
     {
-        UpdateDirection(target);
+        UpdateDirection(target.transform.position.x);
 
         yield return new WaitForSeconds(0.6f);
+
+        target.OnDamage();
 
         yield return new WaitForSeconds(0.6f);
     }
