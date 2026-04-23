@@ -24,6 +24,8 @@ public class DragController : MonoBehaviour,
     private bool _isDragging;
     private Vector3 _dragOffset;
     private IDraggable _dragObject;
+    private Vector2 _lastPosition;
+    private Vector2 _lastDelta;
 
     public void OnPointerClick(PointerEventData data)
     {
@@ -46,19 +48,20 @@ public class DragController : MonoBehaviour,
 
     public void OnDrag(PointerEventData data)
     {
-        if (_isDragging)
+        _lastPosition = data.position;
+        _lastDelta = data.delta;
+
+        if (!_isDragging)
         {
-            var worldPosition = ScreenToWorld(data.position);
-            _dragObject.Drag(worldPosition + _dragOffset);
-        }
-        else
-        {
-            _cameraController.Drag(data.position, data.delta);
+            _cameraController.Drag(_lastPosition, _lastDelta);
         }
     }
 
     public void OnPointerDown(PointerEventData data)
     {
+        _lastPosition = data.position;
+        _lastDelta = data.delta;
+
         var worldPosition = ScreenToWorld(data.position);
         var hits = Physics2D.OverlapPointAll(worldPosition);
         if (hits != null && hits.Length > 0)
@@ -110,5 +113,28 @@ public class DragController : MonoBehaviour,
         var screenPosition = new Vector3(position.x, position.y, cameraZ);
         var worldPosition = _camera.ScreenToWorldPoint(screenPosition);
         return worldPosition;
+    }
+
+    private void Update()
+    {
+        if (_isDragging)
+        {
+            var screenSize = new Vector2(Screen.width, Screen.height);
+            var viewportPosition = _lastPosition / screenSize;
+
+            if (viewportPosition.x < 0.1f)
+            {
+                var delta = Mathf.InverseLerp(0.1f, 0f, viewportPosition.x) * -1;
+                _cameraController.Move(delta);
+            }
+            else if (viewportPosition.x > 0.9f)
+            {
+                var delta = Mathf.InverseLerp(0.9f, 1f, viewportPosition.x) * 1;
+                _cameraController.Move(delta);
+            }
+
+            var worldPosition = ScreenToWorld(_lastPosition);
+            _dragObject.Drag(worldPosition + _dragOffset);
+        }
     }
 }

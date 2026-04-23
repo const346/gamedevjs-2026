@@ -48,6 +48,11 @@ public class EnemyWave : MonoBehaviour, IGameTask
 
             var delay = Random.Range(_spawnMinInterval, _spawnMaxInterval);
             yield return new WaitForSeconds(delay);
+
+            if (!enemyTarget.IsLive)
+            {
+                yield break;
+            }
         }
 
         Debug.Log($"ENEMY WAVE | {name} | ATTACK");
@@ -55,28 +60,30 @@ public class EnemyWave : MonoBehaviour, IGameTask
         var breakTime = Time.time + _attackDuration;
         yield return new WaitUntil(() => enemies.Count(x => x != null) <= 0 || Time.time >= breakTime || !enemyTarget.IsLive);
 
-        if (enemyTarget.IsLive)
+        if (!enemyTarget.IsLive)
         {
-            if (enemies.Any(x => x != null))
+            yield break;
+        }
+
+        if (enemies.Any(x => x != null))
+        {
+            Debug.Log($"ENEMY WAVE | {name} | RETREAT");
+
+            foreach (var enemy in enemies)
             {
-                Debug.Log($"ENEMY WAVE | {name} | RETREAT");
-
-                foreach (var enemy in enemies)
-                {
-                    enemy.Retreat();
-                }
-
-                breakTime = Time.time + _retreatDuration;
-                yield return new WaitUntil(() => !enemies.Any(x => x != null) || Time.time >= breakTime);
-
-                foreach (var enemy in enemies.Where(x => x != null))
-                {
-                    Destroy(enemy.gameObject);
-                }
+                enemy.Retreat();
             }
 
-            Debug.Log($"ENEMY WAVE | {name} | END");
-            yield return new WaitForSeconds(_endDelay);
+            breakTime = Time.time + _retreatDuration;
+            yield return new WaitUntil(() => !enemies.Any(x => x != null) || Time.time >= breakTime);
+
+            foreach (var enemy in enemies.Where(x => x != null))
+            {
+                Destroy(enemy.gameObject);
+            }
         }
+
+        Debug.Log($"ENEMY WAVE | {name} | END");
+        yield return new WaitForSeconds(_endDelay);
     }
 }

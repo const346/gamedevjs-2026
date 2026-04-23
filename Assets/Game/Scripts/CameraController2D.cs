@@ -6,7 +6,7 @@ public class CameraController2D : MonoBehaviour
     [SerializeField] private Vector2 _minBounds = new Vector2(-50, -100);
     [SerializeField] private Vector2 _maxBounds = new Vector2(50, 100);
     [SerializeField] private float _velocityScaler = 0.25f;
-
+    [SerializeField] private float _sideCVScaler = 15f;
 
     private float _lastDragTime;
     private Vector3 _velocity; 
@@ -40,6 +40,14 @@ public class CameraController2D : MonoBehaviour
 
         _camera.transform.position += _velocity * Time.deltaTime;
         _velocity *= Mathf.Pow(0.135f, Time.deltaTime);
+
+        ClampCamera();
+    }
+
+    public void Move(float deltaX)
+    {
+        _camera.transform.position += _sideCVScaler * Time.deltaTime * new Vector3(deltaX, 0, 0);
+        _velocity = Vector3.zero;
 
         ClampCamera();
     }

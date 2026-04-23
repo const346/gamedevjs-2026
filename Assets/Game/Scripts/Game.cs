@@ -6,12 +6,9 @@ public class Game : MonoBehaviour
 {
     [SerializeField] [Range(0f, 10f)] private float _timeScale = 1.0f;
     [Space]
+    [SerializeField] private PageController _pageController;
     [SerializeField] private EnemyTarget _enemyTarget; 
-    [SerializeField] private DragController _dragController;
     [SerializeField] private Camera _camera;
-    [SerializeField] private Transform _winWindow;
-    [SerializeField] private Transform _loseWindow;
-
     private void Start()
     {
         for (int i = 0; i < transform.childCount; i++)
@@ -51,10 +48,9 @@ public class Game : MonoBehaviour
 
     private IEnumerator Ending()
     {
-        // move camera to enemy target
-        _dragController.gameObject.SetActive(false);
+        _pageController.HideAll();
 
-        while (true)
+        while (true) // move camera to enemy target
         {
             var a = _camera.transform.position.x;
             var b = _enemyTarget.transform.position.x;
@@ -75,17 +71,17 @@ public class Game : MonoBehaviour
 
         if (_enemyTarget.IsLive)
         {
-            _winWindow.gameObject.SetActive(true);
+            _pageController.Show("Win");
         }
         else
         {
-            _loseWindow.gameObject.SetActive(true);
+            _pageController.Show("Lose");
         }
     }
 
     public void ResetGame()
     {
-        SceneManager.LoadScene(0); 
+        SceneManager.LoadScene(0);
     }
 }
 
