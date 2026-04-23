@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 
 public class Gear : MonoBehaviour, IDraggable
 {
-    [SerializeField] [Range(6, 22)] private int _numberOfTeeth = 4;
+    [SerializeField] [Range(4, 22)] private int _numberOfTeeth = 4;
     [SerializeField] [Range(0f, 1f)] private float _brokenTeethRatio;
     [SerializeField] private float _quality = 0.99f;
     [SerializeField] private float _guarantee = 360f;
@@ -16,6 +16,7 @@ public class Gear : MonoBehaviour, IDraggable
     [SerializeField] private int _seek;
     [SerializeField] private bool _isDraggable = true;
     [SerializeField] private LayerMask _placementMask;
+    [SerializeField] private bool IgnoreJoints;
 
     [Space]
     public UnityEvent<float> OnSimulate;
@@ -204,6 +205,7 @@ public class Gear : MonoBehaviour, IDraggable
         foreach (var gearAxialGroup in FindNearGears(resultPosition).GroupBy(x => x.Position))
         {
             var minGear = gearAxialGroup.Where(x => x != this)
+                .DefaultIfEmpty()
                 .Aggregate((m, n) => n.NumberOfTeeth < m.NumberOfTeeth ? n : m);
 
             var m = gearAxialGroup.Key - resultPosition;
@@ -226,7 +228,7 @@ public class Gear : MonoBehaviour, IDraggable
             }
         }
 
-        if (!isAxialFound && TryFindNearGear(resultPosition, out var firstGear))
+        if (!isAxialFound && TryFindNearGear(resultPosition, out var firstGear, g => g.IgnoreJoints))
         {
             _gearGraph.CreateJoint(this, firstGear);
 
@@ -241,7 +243,7 @@ public class Gear : MonoBehaviour, IDraggable
             angleCorrection = MathTool.GetGearAngleCorrection
                 (firstGear.NumberOfTeeth, NumberOfTeeth, firstGear.Rotation, Rotation, direction);
 
-            if (TryFindNearGear(resultPosition, out var secondGear, g => g.Position == firstGear.Position))
+            if (TryFindNearGear(resultPosition, out var secondGear, g => g.Position == firstGear.Position || g.IgnoreJoints))
             {
                 var cA = secondGear.transform.position;
                 var rA = secondGear._collider.radius;
@@ -296,16 +298,17 @@ public class Gear : MonoBehaviour, IDraggable
         Sort(this, sortOffset);
     }
 
-
     public void DragStart()
     {
+        _body.simulated = false;
         _body.bodyType = RigidbodyType2D.Static;
     }
 
     public void DragEnd()
     {
-        if (_placementMask.value == 0 || 
-            Physics2D.OverlapPoint(transform.position, _placementMask) == null)
+        if ((_placementMask.value == 0 ||
+            Physics2D.OverlapPoint(transform.position, _placementMask) == null) &&
+            _gearGraph.Get(Position).Count() < 2)
         {
             foreach (var gear in _gearGraph.All())
             {
@@ -319,6 +322,8 @@ public class Gear : MonoBehaviour, IDraggable
             _body.bodyType = RigidbodyType2D.Dynamic;
             _gearGraph.ClearJoints(this);
         }
+
+        _body.simulated = true;
     }
 
     private IEnumerable<Gear> FindNearGears(Vector2 position)
@@ -328,6 +333,8 @@ public class Gear : MonoBehaviour, IDraggable
         {
             if (hits[i].gameObject != gameObject &&
                 hits[i].isTrigger &&
+                hits[i].attachedRigidbody != null &&
+                hits[i].attachedRigidbody.bodyType != RigidbodyType2D.Dynamic &&
                 hits[i].TryGetComponent<Gear>(out var gear))
             {
                 yield return gear;
@@ -359,6 +366,8 @@ public class Gear : MonoBehaviour, IDraggable
         {
             if (hits[i].gameObject != gameObject &&
                 hits[i].isTrigger &&
+                hits[i].attachedRigidbody != null &&
+                hits[i].attachedRigidbody.bodyType != RigidbodyType2D.Dynamic &&
                 hits[i].TryGetComponent<Gear>(out var gear))
             {
                 if (skip != null && skip(gear))
@@ -463,6 +472,15 @@ public class Gear : MonoBehaviour, IDraggable
                     var tooth = _toothContainer.GetChild(i);
                     tooth.gameObject.SetActive(!m[i]);
                 }
+            }
+        }
+
+        if (IgnoreJoints)
+        {
+            for (var i = 0; i < _numberOfTeeth; i++)
+            {
+                var tooth = _toothContainer.GetChild(i);
+                tooth.gameObject.SetActive(false);
             }
         }
     }

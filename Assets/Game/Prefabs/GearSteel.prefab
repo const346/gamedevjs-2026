@@ -152,6 +152,7 @@ MonoBehaviour:
   _placementMask:
     serializedVersion: 2
     m_Bits: 4096
+  IgnoreJoints: 0
   OnSimulate:
     m_PersistentCalls:
       m_Calls: []
@@ -207,7 +208,7 @@ CircleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 16
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2

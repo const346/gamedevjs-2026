@@ -72,12 +72,15 @@ public class DragController : MonoBehaviour,
                 {
                     priority = draggable.DragPriority;
 
-                    _isDragging = true;
-
                     _dragOffset = hit.transform.position - worldPosition;
                     _dragObject = draggable;
-                    _dragObject.DragStart();
+                    _isDragging = true;
                 }
+            }
+
+            if (_dragObject != null)
+            {
+                _dragObject.DragStart();
             }
         }
 
