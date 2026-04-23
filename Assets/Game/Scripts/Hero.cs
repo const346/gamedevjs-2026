@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Hero : MonoBehaviour
 {
     [SerializeField] private Animator _animator;
     [SerializeField] private Thrower _thrower;

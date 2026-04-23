@@ -18,7 +18,7 @@ public class DragController : MonoBehaviour,
 {
     [SerializeField] private Camera _camera;
     [SerializeField] private CameraController2D _cameraController;
-    [SerializeField] private Player _player;
+    [SerializeField] private Hero _player;
 
     private bool _ignoreClick;
     private bool _isDragging;

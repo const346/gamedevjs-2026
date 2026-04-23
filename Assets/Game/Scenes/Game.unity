@@ -14767,7 +14767,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1386152755}
   m_Layer: 0
-  m_Name: PlayerTarget
+  m_Name: HeroTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22554,7 +22554,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6400368794686594767, guid: 3f37644e9291c724c8ea251f0ff27e70, type: 3}
       propertyPath: m_Name
-      value: Player
+      value: Hero
       objectReference: {fileID: 0}
     - target: {fileID: 6400368794686594767, guid: 3f37644e9291c724c8ea251f0ff27e70, type: 3}
       propertyPath: m_IsActive
