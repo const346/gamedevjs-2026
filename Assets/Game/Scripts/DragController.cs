@@ -6,6 +6,8 @@ public interface IDraggable
     int DragPriority { get; }
     bool IsDraggable { get; }
     void Drag(Vector2 position);
+    void DragStart();
+    void DragEnd();
 }
 
 public class DragController : MonoBehaviour,
@@ -74,6 +76,7 @@ public class DragController : MonoBehaviour,
 
                     _dragOffset = hit.transform.position - worldPosition;
                     _dragObject = draggable;
+                    _dragObject.DragStart();
                 }
             }
         }
@@ -86,6 +89,11 @@ public class DragController : MonoBehaviour,
 
     public void OnPointerUp(PointerEventData data)
     {
+        if (_dragObject != null)
+        {
+            _dragObject.DragEnd();
+        }
+
         _isDragging = false;
         _dragObject = null;
 

@@ -15,11 +15,13 @@ public class Gear : MonoBehaviour, IDraggable
     [SerializeField] private float _toothHeight = 0.5f;
     [SerializeField] private int _seek;
     [SerializeField] private bool _isDraggable = true;
+    [SerializeField] private LayerMask _placementMask;
 
     [Space]
     public UnityEvent<float> OnSimulate;
 
     [Space]
+    [SerializeField] private Rigidbody2D _body;
     [SerializeField] private CircleCollider2D _collider;
     [SerializeField] private SortingGroup _sortingGroup;
     [SerializeField] private Transform _baseContainer;
@@ -292,6 +294,22 @@ public class Gear : MonoBehaviour, IDraggable
 
         // ...
         Sort(this, sortOffset);
+    }
+
+
+    public void DragStart()
+    {
+        _body.bodyType = RigidbodyType2D.Static;
+    }
+
+    public void DragEnd()
+    {
+        if (_placementMask.value == 0 || 
+            Physics2D.OverlapPoint(transform.position, _placementMask) == null)
+        {
+            _body.bodyType = RigidbodyType2D.Dynamic;
+            _gearGraph.ClearJoints(this);
+        }
     }
 
     private IEnumerable<Gear> FindNearGears(Vector2 position)
