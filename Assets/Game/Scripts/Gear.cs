@@ -327,6 +327,7 @@ public class Gear : MonoBehaviour, IDraggable
         for (int i = 0; i < hits.Length; i++)
         {
             if (hits[i].gameObject != gameObject &&
+                hits[i].isTrigger &&
                 hits[i].TryGetComponent<Gear>(out var gear))
             {
                 yield return gear;
@@ -357,6 +358,7 @@ public class Gear : MonoBehaviour, IDraggable
         for (int i = 0; i < hits.Length; i++)
         {
             if (hits[i].gameObject != gameObject &&
+                hits[i].isTrigger &&
                 hits[i].TryGetComponent<Gear>(out var gear))
             {
                 if (skip != null && skip(gear))

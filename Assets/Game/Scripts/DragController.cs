@@ -92,6 +92,7 @@ public class DragController : MonoBehaviour,
         if (_dragObject != null)
         {
             _dragObject.DragEnd();
+            _ignoreClick = true;
         }
 
         _isDragging = false;
