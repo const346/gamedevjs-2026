@@ -101,6 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4868679397186479192}
   - component: {fileID: 4932776952270526531}
+  - component: {fileID: 8125426793301228998}
   m_Layer: 10
   m_Name: Visual
   m_TagString: Untagged
@@ -147,6 +148,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!210 &8125426793301228998
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2694685174896517982}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 6
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &6091991856889045009
 GameObject:
   m_ObjectHideFlags: 0

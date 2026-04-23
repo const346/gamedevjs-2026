@@ -307,6 +307,15 @@ public class Gear : MonoBehaviour, IDraggable
         if (_placementMask.value == 0 || 
             Physics2D.OverlapPoint(transform.position, _placementMask) == null)
         {
+            foreach (var gear in _gearGraph.All())
+            {
+                if (gear._body.bodyType == RigidbodyType2D.Dynamic)
+                {
+                    var offset = _sortingGroup.sortingOrder < gear._sortingGroup.sortingOrder ? 1 : -1;
+                    gear._sortingGroup.sortingOrder += offset;
+                }
+            }
+
             _body.bodyType = RigidbodyType2D.Dynamic;
             _gearGraph.ClearJoints(this);
         }

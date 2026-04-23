@@ -32,6 +32,14 @@ public class GearGraph
         }
     }
 
+    public IEnumerable<Gear> All()
+    {
+        foreach (var gear in _gears)
+        {
+            yield return gear;
+        }
+    }
+
     public IEnumerable<Gear> GetJoints(Gear gear)
     {
         foreach (var (a, b) in _joints)
