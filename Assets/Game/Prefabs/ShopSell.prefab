@@ -141,10 +141,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1933122411178594628, guid: e8091fd687d7122448f1ee565b818bdb, type: 3}
       propertyPath: m_Name
-      value: ShopSell Variant
+      value: ShopSell
       objectReference: {fileID: 0}
     - target: {fileID: 1933122411178594628, guid: e8091fd687d7122448f1ee565b818bdb, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3724281025739478364, guid: e8091fd687d7122448f1ee565b818bdb, type: 3}
+      propertyPath: _isSale
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3724281025739478364, guid: e8091fd687d7122448f1ee565b818bdb, type: 3}
@@ -153,10 +157,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6069629269279262530, guid: e8091fd687d7122448f1ee565b818bdb, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 3724281025739478364, guid: e8091fd687d7122448f1ee565b818bdb, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 914456730767479004, guid: e8091fd687d7122448f1ee565b818bdb, type: 3}

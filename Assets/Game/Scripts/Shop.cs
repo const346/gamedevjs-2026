@@ -1,76 +1,134 @@
 using System.Collections;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
 public class Shop : MonoBehaviour
 {
     [SerializeField] private TMP_Text _label;
+    [SerializeField] private Animator _animator;
+    [SerializeField] private Transform _gearHook;
+    [SerializeField] private Gear _gearAnchor;
+    [Space]
+    [SerializeField] private bool _isSale;
+    [SerializeField] private float _respawnTime = 3;
+    [SerializeField] private float _showingTime = 0.5f;
+    [Space]
     [SerializeField] private Gear[] _gearPrefabs;
+
+    //.........
     [SerializeField] private Vector2 _spawnStart;
     [SerializeField] private Vector2 _spawnEnd;
-    [SerializeField] private float _respawnTime = 3;
-    
+
     private Gear _currentGear;
-    private bool _isSpawning;
+    private Wallet _wallet;
 
-    private void Update()
+    private void Start()
     {
-        if (_isSpawning) 
-        {
-            return; 
-        }
+        _wallet = FindAnyObjectByType<Wallet>();
 
-        if (_currentGear == null)
+        if (_isSale)
         {
-            StartCoroutine(SpawnProductYield());
+            StartCoroutine(SellProcess());
         }
-        else 
+        else
         {
-            var p1 = transform.position + (Vector3)_spawnEnd;
-            var p2 = _currentGear.transform.position;
-
-            if (Vector3.Distance(p1, p2) > 0.1f)
-            {
-                _currentGear = null;
-            }
+            StartCoroutine(BuyProcess());
         }
     }
 
-    private IEnumerator SpawnProductYield()
+    private IEnumerator SellProcess()
     {
-        _isSpawning = true;
-        _label.text = "";
-        
-        yield return new WaitForSeconds(_respawnTime);
+        _animator.SetFloat("Time", 1f); 
+        yield return null;
 
-        var gearPrefab = _gearPrefabs[Random.Range(0, _gearPrefabs.Length)];
-
-        var spawnStart = transform.position + (Vector3)_spawnStart;
-        var spawnEnd = transform.position + (Vector3)_spawnEnd;
-
-        _currentGear = Instantiate(gearPrefab, spawnStart, Quaternion.identity);
-
-        var seek = Random.Range(0, 100000);
-        var numberOfTeeth = 6 + Random.Range(0, 4) * 4;
-        var brokenTeethRatio = Random.value > 0.7f ? Random.value * 0.5f : 0;
-
-        _currentGear.Rebuild(seek, numberOfTeeth, brokenTeethRatio);
-        _currentGear.IsDraggable = false;
-
-        for (var t = 0f; t < 1f; t += Time.deltaTime * 0.3f)
+        var sellGear = default(Gear);
+        yield return new WaitUntil(() =>
         {
-            _currentGear.transform.position = Vector3.Lerp(spawnStart, spawnEnd, t);
-            _currentGear.transform.rotation = Quaternion.Euler(0, 0, t * 360 * 2);
+            var gears = _gearAnchor.GearGraph.Get(_gearAnchor.Position);
+            sellGear = gears.FirstOrDefault(x => x != _gearAnchor);
+
+            if (sellGear != null)
+            {
+                var price = sellGear.GetPrice() / 2;
+                _label.text = price.ToString();
+            }
+            else
+            {
+                _label.text = string.Empty;
+            }
+
+            return sellGear != null && !sellGear.IsDragging;
+        });
+
+        sellGear.IsDraggable = false;
+        sellGear.transform.parent = _gearHook;
+        sellGear.transform.localPosition = Vector3.zero;
+
+        var price = sellGear.GetPrice() / 2;
+        _wallet.Add(price);
+
+        for (var t = 0f; t < 1f; t += _showingTime * Time.deltaTime)
+        {
+            _animator.SetFloat("Time", 1f - t);
             yield return null;
         }
 
-        _label.text = "100";
+        Destroy(sellGear.gameObject);
+        _label.text = string.Empty;
 
-        _currentGear.transform.position = spawnEnd;
-        _currentGear.IsDraggable = true;
-
-        _isSpawning = false;
+        StartCoroutine(SellProcess());
     }
 
-    
+    private IEnumerator BuyProcess()
+    {
+        _label.text = string.Empty;
+
+        yield return new WaitForSeconds(_respawnTime);
+        _currentGear = GenerateGear();
+
+        var price = _currentGear.GetPrice();
+
+        // showing
+        for (var t = 0f; t < 1f; t += _showingTime * Time.deltaTime)
+        {
+            _animator.SetFloat("Time", t);
+            yield return null;
+        }
+
+        _label.text = price.ToString();
+
+        // check balance
+
+
+        _currentGear.IsDraggable = true;
+        _currentGear.transform.parent = null;
+
+        // waiting
+        _gearAnchor.gameObject.SetActive(true);
+
+        yield return new WaitUntil(() => Vector2.Distance(_currentGear.Position, _gearAnchor.Position) > 0.1f);
+        _gearAnchor.gameObject.SetActive(false);
+
+        // payment
+        _wallet.TrySpend(price);
+        
+        // restart
+        StartCoroutine(BuyProcess());
+    }
+
+    private Gear GenerateGear()
+    {
+        var gearPrefab = _gearPrefabs[Random.Range(0, _gearPrefabs.Length)];
+        var gear = Instantiate(gearPrefab, _gearHook.transform);
+
+        var seek = Random.Range(0, 100000);
+        var numberOfTeeth = 6 + Random.Range(0, 4) * 4;
+        var brokenTeethRatio = Random.value > 0.5f ? Random.value * 0.5f : 0;
+
+        gear.Rebuild(seek, numberOfTeeth, brokenTeethRatio);
+        gear.IsDraggable = false;
+
+        return gear;
+    }
 }

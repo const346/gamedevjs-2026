@@ -143,8 +143,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gear
   _numberOfTeeth: 10
   _brokenTeethRatio: 0
-  _quality: 1
-  _guarantee: 360
+  _maxTeethDamage: 0.25
+  _quality: 0.95
+  _minWearout: 360
+  _maxWearout: 7200
+  _price: 30
   _toothWidth: 0.3
   _toothHeight: 0.28
   _seek: 0

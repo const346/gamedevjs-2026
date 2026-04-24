@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class Hero : MonoBehaviour
 {
+    [SerializeField] private Wallet _wallet;
     [SerializeField] private Animator _animator;
     [SerializeField] private Thrower _thrower;
     [SerializeField] private Transform _target;
@@ -13,8 +14,6 @@ public class Hero : MonoBehaviour
     [SerializeField] private float _lookDistance = 12;
     [SerializeField] private float _retreatDistance = 6;
     [SerializeField] private float _waypointDistance = 4;
-    [Space]
-    [SerializeField] private float _coins = 0f;
 
     private bool _breakAction;
     private float _lastMoveTime;
@@ -197,7 +196,7 @@ public class Hero : MonoBehaviour
     {
         if (collision.gameObject.TryGetComponent<Coin>(out var _))
         {
-            _coins++;
+            _wallet.Add(1);
             Destroy(collision.gameObject);
         }
     }

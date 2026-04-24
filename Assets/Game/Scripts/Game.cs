@@ -4,11 +4,10 @@ using UnityEngine.SceneManagement;
 
 public class Game : MonoBehaviour
 {
-    [SerializeField] [Range(0f, 10f)] private float _timeScale = 1.0f;
-    [Space]
     [SerializeField] private PageController _pageController;
     [SerializeField] private EnemyTarget _enemyTarget; 
     [SerializeField] private Camera _camera;
+
     private void Start()
     {
         for (int i = 0; i < transform.childCount; i++)
@@ -18,11 +17,6 @@ public class Game : MonoBehaviour
         }
 
         StartCoroutine(Running());
-    }
-
-    private void Update()
-    {
-        Time.timeScale = _timeScale;
     }
 
     private IEnumerator Running()

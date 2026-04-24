@@ -8,9 +8,14 @@ using UnityEngine.Rendering;
 public class Gear : MonoBehaviour, IDraggable
 {
     [SerializeField] [Range(4, 22)] private int _numberOfTeeth = 4;
-    [SerializeField] [Range(0f, 1f)] private float _brokenTeethRatio;
-    [SerializeField] private float _quality = 0.99f;
-    [SerializeField] private float _guarantee = 360f;
+    [SerializeField] [Range(0f, 1f)] private float _brokenTeethRatio = 0f; 
+    [SerializeField] [Range(0f, 1f)] private float _maxTeethDamage = 0.25f;
+    [SerializeField] [Range(0f, 1f)] private float _quality = 0.99f;
+    [SerializeField] private float _minWearout = 360f;
+    [SerializeField] private float _maxWearout = 360f * 20;
+    [Space]
+    [SerializeField] private int _price = 30;
+    [Space]
     [SerializeField] private float _toothWidth = 0.6f;
     [SerializeField] private float _toothHeight = 0.5f;
     [SerializeField] private int _seek;
@@ -36,10 +41,13 @@ public class Gear : MonoBehaviour, IDraggable
         set => _isDraggable = value;
     }
 
+    public bool IsDragging { get; private set; }
+
     public int DragPriority => _sortingGroup.sortingOrder;
     public int NumberOfTeeth => _numberOfTeeth;
     public float OuterRadius => _collider.radius;
     public float InnerRadius => OuterRadius - _toothHeight;
+    public float TeethDamage => 1f - _numberOfTeeth / (float)GetBrokenTeethCount();
 
     public Vector2 Position 
     { 
@@ -53,11 +61,24 @@ public class Gear : MonoBehaviour, IDraggable
         set => transform.rotation = Quaternion.Euler(0, 0, value);
     }
 
-    private static readonly GearGraph _gearGraph = new();
+    public GearGraph GearGraph => _gearGraph;
 
-    private long _sortFrame;
-    private long _simulateFrame;
-    private float _accumulated; // wearout
+    public int GetPrice()
+    {
+        var price = _price;
+
+        price += 10 * Mathf.Abs(8 - NumberOfTeeth);
+
+        if (GetBrokenTeethCount() > 0)
+        {
+            price /= 2;
+        }
+
+        return price;
+    }
+
+    private static readonly GearGraph _gearGraph = new();
+    private float _wearout;
 
     private void Awake()
     {
@@ -74,55 +95,61 @@ public class Gear : MonoBehaviour, IDraggable
         _gearGraph.Unregister(this);
     }
 
-    public void Simulate(Gear parent, float torgue, bool isAxial = false)
+    public void Simulate(Gear parent, float delta, bool isAxial = false)
     {
-        //var direction = Vector2.up;
-        //var isEdgeContact = parent != null && !IsAxialContact(parent);
-
-        //if (isEdgeContact)
-        //{
-        //    direction = parent.transform.position - transform.position;
-        //    torgue = torgue * -1 * parent._numberOfTeeth / _numberOfTeeth;
-        //}
-
-        //if (_simulateFrame == Time.frameCount)
-        //{
-        //    BreakTooth(direction);
-        //    return;
-        //}
-        //else if (_accumulated >= _guarantee && isEdgeContact)
-        //{
-        //    var breakChance = (1 - _quality) * Mathf.Abs(torgue) / (Mathf.PI * 2);
-        //    if (UnityEngine.Random.value < breakChance)
-        //    {
-        //        BreakTooth(direction);
-        //    }
-        //}
-
-        //
-        //_accumulated += Mathf.Abs(torgue);
-
-        //if (_simulateFrame == Time.frameCount)
-        //{
-        //    //BreakTooth(direction);
-        //    return;
-        //}
-
-        //_simulateFrame = Time.frameCount;
-
         if (parent != null && !isAxial)
         {
-            torgue = torgue * -1 * parent.NumberOfTeeth / NumberOfTeeth;
+            //var steps = Mathf.FloorToInt(delta / NumberOfTeeth);
+            //Debug.Log($"steps: {steps}");
+            
+
+
+            var toothA = GetTooth(parent.transform.position - transform.position);
+            var toothB = parent.GetTooth(transform.position - parent.transform.position);
+
+            Debug.DrawLine(toothA.position, transform.position,  Color.darkKhaki);
+            Debug.DrawLine(toothB.position, parent.transform.position, Color.darkCyan);
+
+
+            var k = toothA.gameObject.activeSelf && toothA.gameObject.activeSelf;
+            var s = k ? 1 : 0.5f;
+
+            delta *= -1f * s * parent.NumberOfTeeth / NumberOfTeeth;
         }
 
-        transform.rotation *= Quaternion.Euler(0, 0, torgue);
-        OnSimulate?.Invoke(torgue);
+        _wearout += Mathf.Abs(delta);
 
-        foreach (var joints in _gearGraph.GetJoints(this))
+        Rotation += delta;
+        OnSimulate?.Invoke(delta);
+
+        foreach (var joint in _gearGraph.GetJoints(this))
         {
-            if (joints != parent)
+            if (joint != parent)
             {
-                joints.Simulate(this, torgue);
+                //// break tooth 
+                //if (TeethDamage < _maxTeethDamage)
+                //{
+                //    var wear01 = Mathf.InverseLerp(_minWearout, _maxWearout, _wearout);
+                //    if (wear01 > 0)
+                //    {
+                //        var effectiveQuality = Mathf.Lerp(1f, _quality, wear01);
+                //        var breakChance = 1f - Mathf.Pow(effectiveQuality, Mathf.Abs(delta) / 360f);
+
+                //        if (UnityEngine.Random.value < breakChance)
+                //        {
+                //            BreakTooth(joint.transform.position - transform.position);
+                //        }
+                //    }
+                //}
+
+                // for test
+                //var toothA = GetTooth(joint.transform.position - transform.position);
+                //var toothB = joint.GetTooth(transform.position - joint.transform.position);
+                //var k = toothA.gameObject.activeSelf && toothA.gameObject.activeSelf;
+
+                //var s = k ? 1 : 0.5f;
+
+                joint.Simulate(this, delta );
             }
         }
 
@@ -132,7 +159,7 @@ public class Gear : MonoBehaviour, IDraggable
             {
                 if (gear != this)
                 {
-                    gear.Simulate(this, torgue, true);
+                    gear.Simulate(this, delta, true);
                 }
             }
         }
@@ -140,13 +167,6 @@ public class Gear : MonoBehaviour, IDraggable
 
     private void Sort(Gear parent, int sortOffset, bool isAxial = false)
     {
-        //if (_sortFrame == Time.frameCount)
-        //{
-        //    return;
-        //}
-
-        //_sortFrame = Time.frameCount;
-
         _sortingGroup.sortingOrder = sortOffset;
 
         foreach (var joints in _gearGraph.GetJoints(this))
@@ -169,38 +189,53 @@ public class Gear : MonoBehaviour, IDraggable
         }
     }
 
-    //private Transform GetTooth(Vector2 direction)
-    //{
-    //    var localDirection = Quaternion.Inverse(transform.rotation) * direction.normalized;
-    //    var alpha = Mathf.Atan2(localDirection.y, localDirection.x) * Mathf.Rad2Deg;
-    //    alpha = (alpha + 360 - 90) % 360;
+    private Transform GetTooth(Vector2 direction)
+    {
+        var localDirection = Quaternion.Inverse(transform.rotation) * direction.normalized;
+        var alpha = Mathf.Atan2(localDirection.y, localDirection.x) * Mathf.Rad2Deg;
+        alpha = (alpha + 360 - 90) % 360;
 
-    //    var toothAngle = 360f / _numberOfTeeth;
-    //    var toothIndex = Mathf.RoundToInt(alpha / toothAngle) % _numberOfTeeth;
-    //    return _toothContainer.GetChild(toothIndex);
-    //}
+        var toothAngle = 360f / _numberOfTeeth;
+        var toothIndex = Mathf.RoundToInt(alpha / toothAngle) % _numberOfTeeth;
+        return _toothContainer.GetChild(toothIndex);
+    }
 
-    //private void BreakTooth(Vector2 direction)
-    //{
-    //    var tooth = GetTooth(direction);
-    //    if (tooth.gameObject.activeSelf)
-    //    {
-    //        tooth.gameObject.SetActive(false);
+    private void BreakTooth(Vector2 direction)
+    {
+        var tooth = GetTooth(direction);
+        if (tooth.gameObject.activeSelf)
+        {
+            tooth.gameObject.SetActive(false);
 
-    //        // effect broken tooth
-    //        var cloneTooth = Instantiate(tooth, tooth.position, tooth.rotation, null);
-    //        cloneTooth.gameObject.SetActive(true);
-    //        Destroy(cloneTooth.gameObject, 5f);
+            // effect broken tooth
+            var cloneTooth = Instantiate(tooth, tooth.position, tooth.rotation, null);
+            cloneTooth.gameObject.SetActive(true);
+            Destroy(cloneTooth.gameObject, 5f);
 
-    //        var body = cloneTooth.gameObject.AddComponent<Rigidbody2D>();
-    //        var forceDirection = new Vector2(direction.y, -direction.x).normalized;
-    //        var forcePosition = cloneTooth.position + 
-    //            (Vector3) UnityEngine.Random.insideUnitCircle * 0.2f;
-    //        var force = forceDirection * UnityEngine.Random.Range(8, 12);
+            var body = cloneTooth.gameObject.AddComponent<Rigidbody2D>();
+            var forceDirection = new Vector2(direction.y, -direction.x).normalized;
+            var forcePosition = cloneTooth.position +
+                (Vector3)UnityEngine.Random.insideUnitCircle * 0.2f;
+            var force = forceDirection * UnityEngine.Random.Range(8, 12);
 
-    //        body.AddForceAtPosition(force, forcePosition, ForceMode2D.Impulse);
-    //    }
-    //}
+            body.AddForceAtPosition(force, forcePosition, ForceMode2D.Impulse);
+        }
+    }
+
+    private int GetBrokenTeethCount()
+    {
+        var counter = 0;
+        for (var i = 0; i < _numberOfTeeth; i++)
+        {
+            var tooth = _toothContainer.GetChild(i);
+            if (!tooth.gameObject.activeSelf)
+            {
+                counter++;
+            }
+        }
+
+        return counter;
+    }
 
     public void Drag(Vector2 target)
     {
@@ -302,6 +337,8 @@ public class Gear : MonoBehaviour, IDraggable
     {
         _body.simulated = false;
         _body.bodyType = RigidbodyType2D.Static;
+
+        IsDragging = true;
     }
 
     public void DragEnd()
@@ -324,6 +361,8 @@ public class Gear : MonoBehaviour, IDraggable
         }
 
         _body.simulated = true;
+
+        IsDragging = false;
     }
 
     private void Synchronize(Gear gear, bool selfApply = false)
