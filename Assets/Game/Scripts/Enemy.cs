@@ -4,12 +4,14 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private Animator _animator;
-    [SerializeField] private float _speed = 0.5f;
+    [SerializeField] private float _speed = 0.5f; 
+    [SerializeField] private float _deathDuration = 2f;
     [SerializeField] private GameObject _rewardPrefab;
     [SerializeField] private Vector2 _rewardOffset = Vector2.up;
 
     private bool _breakAction;
-    private bool _isRetreat;
+    private bool _isRetreat; 
+    private bool _isLive = true;
     private float _speedScaler = 1;
     private EnemyTarget _target;
 
@@ -17,8 +19,15 @@ public class Enemy : MonoBehaviour
 
     public void OnDamage()
     {
-        SpawnReward();
-        Destroy(gameObject);
+        if (_isLive)
+        {
+            _animator.SetTrigger("Death");
+            Destroy(gameObject, _deathDuration);
+
+            SpawnReward();
+
+            _isLive = false;
+        }
     }
 
     private void SpawnReward()
@@ -65,7 +74,13 @@ public class Enemy : MonoBehaviour
                 targetPosition += Random.Range(-_target.DamageArea, _target.DamageArea);
 
                 yield return MoveAction(targetPosition);
-                yield return AttackAction(_target);
+
+                var a = transform.position.x;
+                var b = _target.transform.position.x;
+                if (Mathf.Abs(b - a) < _target.DamageArea)
+                {
+                    yield return AttackAction(_target);
+                }
             }
             else
             {
@@ -86,7 +101,7 @@ public class Enemy : MonoBehaviour
             var d = Mathf.Abs(m);
             var v = Mathf.Sign(m) * _speed * _speedScaler;
 
-            if (d < 0.01f || _breakAction)
+            if (d < 0.01f || _breakAction || !_isLive)
             {
                 yield break;
             }
@@ -106,6 +121,7 @@ public class Enemy : MonoBehaviour
 
     private IEnumerator AttackAction(EnemyTarget target)
     {
+        _animator.SetTrigger("Attack");
         UpdateDirection(target.transform.position.x);
 
         yield return new WaitForSeconds(0.6f);
