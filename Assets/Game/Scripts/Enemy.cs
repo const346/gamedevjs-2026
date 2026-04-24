@@ -70,14 +70,10 @@ public class Enemy : MonoBehaviour
         {
             if (!_isRetreat)
             {
-                var targetPosition = _target.transform.position.x;
-                targetPosition += Random.Range(-_target.DamageArea, _target.DamageArea);
+                var attackPosition = _target.GetRandDamagePosition();
+                yield return MoveAction(attackPosition.x);
 
-                yield return MoveAction(targetPosition);
-
-                var a = transform.position.x;
-                var b = _target.transform.position.x;
-                if (Mathf.Abs(b - a) < _target.DamageArea)
+                if (_target.IsInsideDamageZone(transform.position))
                 {
                     yield return AttackAction(_target);
                 }
@@ -124,11 +120,11 @@ public class Enemy : MonoBehaviour
         _animator.SetTrigger("Attack");
         UpdateDirection(target.transform.position.x);
 
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(0.5f);
 
         target.OnDamage();
 
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(1.5f);
     }
 
     private void UpdateDirection(float target)
