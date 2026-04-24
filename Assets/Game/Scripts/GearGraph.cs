@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class GearGraph
 {
-    private List<Gear> _gears = new();
-    private List<(Gear A, Gear B)> _joints = new();
+    private readonly List<Gear> _gears = new();
+    private readonly List<(Gear A, Gear B)> _joints = new();
 
     public void Register(Gear gear)
     {
@@ -76,5 +76,47 @@ public class GearGraph
                 _joints.RemoveAt(i);
             }
         }
+    }
+
+    private readonly HashSet<Gear> _visited = new();
+    private readonly Queue<Gear> _queue = new();
+
+    public bool HasPath(Gear a, Gear b)
+    {
+        //var visited = new HashSet<Gear>();
+        //var queue = new Queue<Gear>();
+
+        _visited.Clear();
+        _queue.Clear();
+
+        _queue.Enqueue(a);
+        _visited.Add(a);
+
+        while (_queue.Count > 0)
+        {
+            var node = _queue.Dequeue();
+            if (node == b)
+            {
+                return true;
+            }
+
+            foreach (var next in GetJoints(node))
+            {
+                if (_visited.Add(next))
+                {
+                    _queue.Enqueue(next);
+                }
+            }
+
+            foreach (var next in Get(node.Position))
+            {
+                if (_visited.Add(next))
+                {
+                    _queue.Enqueue(next);
+                }
+            }
+        }
+
+        return false;
     }
 }

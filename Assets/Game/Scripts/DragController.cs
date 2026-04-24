@@ -10,7 +10,7 @@ public interface IDraggable
     void DragEnd();
 }
 
-public class DragController : MonoBehaviour,
+public class DragController : MonoBehaviour, /// TODO: rename InputController
     IPointerDownHandler,
     IPointerUpHandler,
     IDragHandler,

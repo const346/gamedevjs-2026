@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class CameraController2D : MonoBehaviour
+public class CameraController2D : MonoBehaviour /// TODO: rename CameraController
 {
     [SerializeField] private Vector2 _minBounds = new Vector2(-50, -100);
     [SerializeField] private Vector2 _maxBounds = new Vector2(50, 100);

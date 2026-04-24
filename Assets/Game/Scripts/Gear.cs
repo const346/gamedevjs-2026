@@ -40,14 +40,24 @@ public class Gear : MonoBehaviour, IDraggable
     public int NumberOfTeeth => _numberOfTeeth;
     public float OuterRadius => _collider.radius;
     public float InnerRadius => OuterRadius - _toothHeight;
-    public Vector2 Position => transform.position;
-    public float Rotation => transform.rotation.eulerAngles.z;
+
+    public Vector2 Position 
+    { 
+        get => transform.position; 
+        set => transform.position = value; 
+    }
+
+    public float Rotation
+    {
+        get => transform.rotation.eulerAngles.z;
+        set => transform.rotation = Quaternion.Euler(0, 0, value);
+    }
 
     private static readonly GearGraph _gearGraph = new();
 
     private long _sortFrame;
     private long _simulateFrame;
-    private float _accumulated;
+    private float _accumulated; // wearout
 
     private void Awake()
     {
@@ -92,13 +102,13 @@ public class Gear : MonoBehaviour, IDraggable
         //
         //_accumulated += Mathf.Abs(torgue);
 
-        if (_simulateFrame == Time.frameCount)
-        {
-            //BreakTooth(direction);
-            return;
-        }
+        //if (_simulateFrame == Time.frameCount)
+        //{
+        //    //BreakTooth(direction);
+        //    return;
+        //}
 
-        _simulateFrame = Time.frameCount;
+        //_simulateFrame = Time.frameCount;
 
         if (parent != null && !isAxial)
         {
@@ -130,12 +140,12 @@ public class Gear : MonoBehaviour, IDraggable
 
     private void Sort(Gear parent, int sortOffset, bool isAxial = false)
     {
-        if (_sortFrame == Time.frameCount)
-        {
-            return;
-        }
+        //if (_sortFrame == Time.frameCount)
+        //{
+        //    return;
+        //}
 
-        _sortFrame = Time.frameCount;
+        //_sortFrame = Time.frameCount;
 
         _sortingGroup.sortingOrder = sortOffset;
 
@@ -192,23 +202,21 @@ public class Gear : MonoBehaviour, IDraggable
     //    }
     //}
 
-    public void Drag(Vector2 position)
+    public void Drag(Vector2 target)
     {
-        var resultPosition = position;
-        var resultRotation = Rotation;
-        var angleCorrection = 0f;
-        var sortOffset = 0;
-
         _gearGraph.ClearJoints(this);
 
+        Position = target;
+
+        var sortOffset = 0;
         var isAxialFound = false;
-        foreach (var gearAxialGroup in FindNearGears(resultPosition).GroupBy(x => x.Position))
+        foreach (var gearAxialGroup in FindNearGears(Position).GroupBy(x => x.Position))
         {
             var minGear = gearAxialGroup.Where(x => x != this)
                 .DefaultIfEmpty()
                 .Aggregate((m, n) => n.NumberOfTeeth < m.NumberOfTeeth ? n : m);
 
-            var m = gearAxialGroup.Key - resultPosition;
+            var m = gearAxialGroup.Key - Position;
             var d = m.magnitude;
             var r = InnerRadius * 0.75f + minGear.InnerRadius * 0.5f; // TODO: ???
 
@@ -218,8 +226,8 @@ public class Gear : MonoBehaviour, IDraggable
             if (d < r && _gearGraph.Get(minGear.Position)
                 .All(g => g == this || g.NumberOfTeeth != _numberOfTeeth))
             {
-                resultPosition = minGear.Position;
-                resultRotation = minGear.Rotation;
+                Position = minGear.Position;
+                Rotation = minGear.Rotation;
 
                 sortOffset = minGear._sortingGroup.sortingOrder + (minGear.NumberOfTeeth - NumberOfTeeth);
 
@@ -228,22 +236,20 @@ public class Gear : MonoBehaviour, IDraggable
             }
         }
 
-        if (!isAxialFound && TryFindNearGear(resultPosition, out var firstGear, g => g.IgnoreJoints))
+        if (!isAxialFound && TryFindNearGear(Position, out var firstGear, g => g.IgnoreJoints))
         {
             _gearGraph.CreateJoint(this, firstGear);
 
             sortOffset = firstGear._sortingGroup.sortingOrder;
 
-            var direction = (firstGear.Position - resultPosition).normalized;
+            var direction = (firstGear.Position - Position).normalized;
             var distance = _collider.radius + firstGear._collider.radius -
                 Mathf.Max(_toothHeight, firstGear._toothHeight);
 
-            resultPosition = firstGear.Position - direction * distance;
+            Position = firstGear.Position - direction * distance;
+            Synchronize(firstGear, true);
 
-            angleCorrection = MathTool.GetGearAngleCorrection
-                (firstGear.NumberOfTeeth, NumberOfTeeth, firstGear.Rotation, Rotation, direction);
-
-            if (TryFindNearGear(resultPosition, out var secondGear, g => g.Position == firstGear.Position || g.IgnoreJoints))
+            if (TryFindNearGear(Position, out var secondGear, g => g.Position == firstGear.Position || g.IgnoreJoints))
             {
                 var cA = secondGear.transform.position;
                 var rA = secondGear._collider.radius;
@@ -251,50 +257,44 @@ public class Gear : MonoBehaviour, IDraggable
                 var rB = firstGear._collider.radius;
                 var rC = _collider.radius - Mathf.Max(_toothHeight, secondGear._toothHeight);
 
+                var hasPath = _gearGraph.HasPath(firstGear, secondGear);
+                if (hasPath)
+                {
+                    rC = _collider.radius - _toothHeight;
+                    rA = secondGear._collider.radius + secondGear._toothHeight;
+                }
+
                 if (MathTool.SolveCircle(cA, rA, cB, rB, rC, out var rp1, out var rp2))
                 {
-                    var d1 = (resultPosition - rp1).sqrMagnitude;
-                    var d2 = (resultPosition - rp2).sqrMagnitude;
+                    var d1 = (Position - rp1).sqrMagnitude;
+                    var d2 = (Position - rp2).sqrMagnitude;
 
-                    resultPosition = d1 < d2 ? rp1 : rp2;
+                    Position = d1 < d2 ? rp1 : rp2;
+                    Synchronize(firstGear, true);
 
-                    direction = (firstGear.Position - resultPosition).normalized;
-                    angleCorrection = MathTool.GetGearAngleCorrection
-                        (firstGear.NumberOfTeeth, NumberOfTeeth, firstGear.Rotation, Rotation, direction);
-
-                    direction = (secondGear.Position - resultPosition).normalized;
-                    var forceAngleCorrection = MathTool.GetGearAngleCorrection
-                        (secondGear.NumberOfTeeth, NumberOfTeeth, secondGear.Rotation, resultRotation + angleCorrection, direction);
-
-                    secondGear.Simulate(this, -forceAngleCorrection);
-
-                    _gearGraph.CreateJoint(this, secondGear);
+                    if (!hasPath)
+                    {
+                        _gearGraph.CreateJoint(this, secondGear);
+                        Synchronize(secondGear);
+                    }
                 }
             }
         }
 
-        //foreach (var nearGear in FindNearGears(resultPosition))
-        //{
-        //    var d = Vector2.Distance(nearGear.Position, resultPosition);
-        //    var h = Mathf.Max(_toothHeight, nearGear._toothHeight);
-        //    var q = (nearGear.OuterRadius + OuterRadius) - h;
+        foreach (var nearGear in FindNearGears(Position))
+        {
+            var d = Vector2.Distance(nearGear.Position, Position);
+            var h = Mathf.Max(_toothHeight, nearGear._toothHeight);
+            var q = (nearGear.OuterRadius + OuterRadius) - h;
 
-        //    if (Mathf.Abs(d - q) < h * 0.2f)
-        //    {
-        //        _gearGraph.CreateJoint(this, nearGear);
-        //    }
+            if (Mathf.Abs(d - q) < h * 0.2f &&
+                !_gearGraph.HasPath(this, nearGear))
+            {
+                _gearGraph.CreateJoint(this, nearGear);
+                Synchronize(nearGear);
+            }
+        }
 
-        //    // check second and others contact (invalid position or looping)
-        //    // ...
-
-        //    // нельзя ловить контакт с N шестернями на одной втулке
-        //}
-
-        // apply result
-        transform.position = resultPosition;
-        transform.rotation = Quaternion.Euler(0, 0, resultRotation + angleCorrection);
-
-        // ...
         Sort(this, sortOffset);
     }
 
@@ -324,6 +324,22 @@ public class Gear : MonoBehaviour, IDraggable
         }
 
         _body.simulated = true;
+    }
+
+    private void Synchronize(Gear gear, bool selfApply = false)
+    {
+        var direction = (gear.Position - Position).normalized;
+        var angleCorrection = MathTool.GetGearAngleCorrection
+            (gear.NumberOfTeeth, NumberOfTeeth, gear.Rotation, Rotation, direction);
+
+        if (selfApply)
+        {
+            Rotation += angleCorrection;
+        }
+        else
+        {
+            gear.Simulate(this, -angleCorrection);
+        }
     }
 
     private IEnumerable<Gear> FindNearGears(Vector2 position)
