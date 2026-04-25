@@ -238,6 +238,8 @@ MonoBehaviour:
   _animator: {fileID: 2638500868019804116}
   _gearHook: {fileID: 5410359768777623781}
   _gearAnchor: {fileID: 2623296725494919967}
+  _priceColor: {r: 1, g: 0.8627451, b: 0.5764706, a: 1}
+  _lockedPriceColor: {r: 0.8509804, g: 0.09411765, b: 0.08627451, a: 1}
   _isSale: 0
   _respawnTime: 3
   _showingTime: 0.5
