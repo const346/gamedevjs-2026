@@ -4,9 +4,9 @@ using UnityEngine.SceneManagement;
 
 public class Game : MonoBehaviour
 {
+    [SerializeField] private CameraController2D _cameraController;
     [SerializeField] private PageController _pageController;
     [SerializeField] private EnemyTarget _enemyTarget; 
-    [SerializeField] private Camera _camera;
 
     private void Start()
     {
@@ -44,22 +44,10 @@ public class Game : MonoBehaviour
     {
         _pageController.HideAll();
 
-        while (true) // move camera to enemy target
-        {
-            var a = _camera.transform.position.x;
-            var b = _enemyTarget.transform.position.x;
-
-            if (Mathf.Abs(b - a) < 0.5f)
-            {
-                break;
-            }
-
-            var p = _camera.transform.position;
-            p.x = Mathf.MoveTowards(a, b, 25f * Time.deltaTime);
-            _camera.transform.position = p;
-
-            yield return null;
-        }
+        var cameraTarget = _enemyTarget.transform.position.x;
+        yield return _cameraController.MoveTo(cameraTarget);
+        
+        _enemyTarget.Death();
 
         yield return new WaitForSeconds(2f);
 

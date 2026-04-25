@@ -4,14 +4,21 @@ public class EnemyTarget : MonoBehaviour
 {
     [SerializeField] private int _health = 20; 
     [SerializeField] private BoxCollider2D[] _damageZones;
-    [SerializeField] private float _damageArea = 2f;
+    [SerializeField] private Animator _animator;
 
-    public float DamageArea => _damageArea;
     public bool IsLive => _health > 0;
 
     public void OnDamage()
     {
         _health = Mathf.Max(0, _health - 1);
+    }
+
+    public void Death()
+    {
+        if (_animator != null)
+        {
+            _animator.SetTrigger("Death");
+        }
     }
 
     public bool IsInsideDamageZone(Vector2 position)

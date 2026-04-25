@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
@@ -50,6 +51,26 @@ public class CameraController2D : MonoBehaviour /// TODO: rename CameraControlle
         _velocity = Vector3.zero;
 
         ClampCamera();
+    }
+
+    public IEnumerator MoveTo(float positionX)
+    {
+        while (true)
+        {
+            var a = _camera.transform.position.x;
+            var b = positionX;
+
+            if (Mathf.Abs(b - a) < 0.5f)
+            {
+                break;
+            }
+
+            var p = _camera.transform.position;
+            p.x = Mathf.MoveTowards(a, b, 25f * Time.deltaTime);
+            _camera.transform.position = p;
+
+            yield return null;
+        }
     }
 
     public void Drag(Vector2 position, Vector2 delta)

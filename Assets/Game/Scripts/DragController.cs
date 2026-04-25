@@ -21,6 +21,8 @@ public class DragController : MonoBehaviour, /// TODO: rename InputController
     [SerializeField] private Hero _player;
 
     private bool _ignoreClick;
+    private bool _ignoreDragCamera;
+
     private bool _isDragging;
     private Vector3 _dragOffset;
     private IDraggable _dragObject;
@@ -51,7 +53,7 @@ public class DragController : MonoBehaviour, /// TODO: rename InputController
         _lastPosition = data.position;
         _lastDelta = data.delta;
 
-        if (!_isDragging)
+        if (!_isDragging && !_ignoreDragCamera)
         {
             _cameraController.Drag(_lastPosition, _lastDelta);
         }
@@ -69,15 +71,18 @@ public class DragController : MonoBehaviour, /// TODO: rename InputController
             var priority = int.MinValue;
             foreach (var hit in hits)
             {
-                if (hit.TryGetComponent<IDraggable>(out var draggable) && 
-                    draggable.IsDraggable && 
-                    draggable.DragPriority > priority)
+                if (hit.TryGetComponent<IDraggable>(out var draggable))
                 {
-                    priority = draggable.DragPriority;
+                    if (draggable.IsDraggable && draggable.DragPriority > priority)
+                    {
+                        priority = draggable.DragPriority;
 
-                    _dragOffset = hit.transform.position - worldPosition;
-                    _dragObject = draggable;
-                    _isDragging = true;
+                        _dragOffset = hit.transform.position - worldPosition;
+                        _dragObject = draggable;
+                        _isDragging = true;
+                    }
+
+                    _ignoreDragCamera = true; // temporary
                 }
             }
 
@@ -101,6 +106,7 @@ public class DragController : MonoBehaviour, /// TODO: rename InputController
             _ignoreClick = true;
         }
 
+        _ignoreDragCamera = false;
         _isDragging = false;
         _dragObject = null;
 

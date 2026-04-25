@@ -16,10 +16,6 @@ public class Shop : MonoBehaviour
     [Space]
     [SerializeField] private Gear[] _gearPrefabs;
 
-    //.........
-    [SerializeField] private Vector2 _spawnStart;
-    [SerializeField] private Vector2 _spawnEnd;
-
     private Gear _currentGear;
     private Wallet _wallet;
 
@@ -97,23 +93,31 @@ public class Shop : MonoBehaviour
         }
 
         _label.text = price.ToString();
-
-        // check balance
-
-
-        _currentGear.IsDraggable = true;
         _currentGear.transform.parent = null;
-
-        // waiting
         _gearAnchor.gameObject.SetActive(true);
 
-        yield return new WaitUntil(() => Vector2.Distance(_currentGear.Position, _gearAnchor.Position) > 0.1f);
-        _gearAnchor.gameObject.SetActive(false);
 
-        // payment
+        yield return new WaitUntil(() =>
+        {
+            var isAvailable = _wallet.Balance >= price;
+
+            _currentGear.IsDraggable = isAvailable;
+
+            if (isAvailable)
+            {
+                var distance = Vector2.Distance(_currentGear.Position, _gearAnchor.Position);
+                if (distance > 0.1f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        _gearAnchor.gameObject.SetActive(false);
         _wallet.TrySpend(price);
-        
-        // restart
+
         StartCoroutine(BuyProcess());
     }
 

@@ -19907,6 +19907,7 @@ GameObject:
   - component: {fileID: 1618094287}
   - component: {fileID: 1618094286}
   - component: {fileID: 1618094285}
+  - component: {fileID: 1618094288}
   m_Layer: 4
   m_Name: Water
   m_TagString: Untagged
@@ -19945,7 +19946,7 @@ BoxCollider2D:
     serializedVersion: 2
     m_Bits: 4294967295
   m_IsTrigger: 0
-  m_UsedByEffector: 0
+  m_UsedByEffector: 1
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
@@ -20034,6 +20035,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!252 &1618094288
+SurfaceEffector2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1618094284}
+  m_Enabled: 1
+  m_UseColliderMask: 1
+  m_ColliderMask:
+    serializedVersion: 2
+    m_Bits: 64
+  m_Speed: -0.22
+  m_SpeedVariation: 0
+  m_ForceScale: 1
+  m_UseContactForce: 0
+  m_UseFriction: 1
+  m_UseBounce: 1
 --- !u!1 &1628463796
 GameObject:
   m_ObjectHideFlags: 0
@@ -26210,9 +26229,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a72551fa16a2d544eae34db619c43e7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game
+  _cameraController: {fileID: 519420033}
   _pageController: {fileID: 2040765701}
   _enemyTarget: {fileID: 42905870}
-  _camera: {fileID: 519420031}
 --- !u!4 &2129974068
 Transform:
   m_ObjectHideFlags: 0
@@ -26536,7 +26555,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5453080465078635001, guid: c8d0fd2a4eb14084c88244000759e8b7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: c8d0fd2a4eb14084c88244000759e8b7, type: 3}
 --- !u!1001 &4699796688060243142
 PrefabInstance:
