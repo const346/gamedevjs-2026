@@ -52,7 +52,7 @@ public class Arrow : MonoBehaviour
             _body.freezeRotation = true;
             _body.simulated = false;
 
-            AudioSource.PlayClipAtPoint(_impactToGroundSound, transform.position);
+            AudioSource.PlayClipAtPoint(_impactToGroundSound, transform.position, 0.1f);
         }
     }
 }

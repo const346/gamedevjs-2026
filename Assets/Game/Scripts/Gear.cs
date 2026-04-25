@@ -39,6 +39,7 @@ public class Gear : MonoBehaviour, IDraggable
     [SerializeField] private AudioClip _magnetAxialSound; 
     [SerializeField] private AudioClip _magnetChangeLayerSound;
     [SerializeField] private AudioClip _magnetDiconnectSound;
+    [SerializeField] private AudioClip _fallSound;
 
     public bool IsDraggable
     {
@@ -542,6 +543,16 @@ public class Gear : MonoBehaviour, IDraggable
                 var tooth = _toothContainer.GetChild(i);
                 tooth.gameObject.SetActive(false);
             }
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        var rv = collision.relativeVelocity.magnitude;
+        var volume = Mathf.Sqrt(Mathf.InverseLerp(0, 10, rv));
+        if (volume > 0.3f)
+        {
+            AudioSource.PlayClipAtPoint(_fallSound, transform.position, volume);
         }
     }
 
