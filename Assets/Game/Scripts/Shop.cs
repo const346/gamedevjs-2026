@@ -14,7 +14,8 @@ public class Shop : MonoBehaviour
     [SerializeField] private Color _lockedPriceColor;
     [Space]
     [SerializeField] private AudioClip _buySound;
-    [SerializeField] private AudioClip _sellSound;
+    [SerializeField] private AudioClip _sellSound; 
+    [SerializeField] private AudioClip _spinSound;
     [Space]
     [SerializeField] private bool _isSale;
     [SerializeField] private float _respawnTime = 3;
@@ -74,10 +75,10 @@ public class Shop : MonoBehaviour
         var price = sellGear.GetPrice() / 2;
         _wallet.Add(price);
 
-        AudioSource.PlayClipAtPoint(_sellSound, transform.position);
-
         _gearAnchor.gameObject.SetActive(false);
 
+        AudioSource.PlayClipAtPoint(_sellSound, transform.position);
+        AudioSource.PlayClipAtPoint(_spinSound, transform.position);
         for (var t = 0f; t < 1f; t += _showingTime * Time.deltaTime)
         {
             _animator.SetFloat("Time", 1f - t);
@@ -99,7 +100,7 @@ public class Shop : MonoBehaviour
 
         var price = _currentGear.GetPrice();
 
-        // showing
+        AudioSource.PlayClipAtPoint(_spinSound, transform.position);
         for (var t = 0f; t < 1f; t += _showingTime * Time.deltaTime)
         {
             _animator.SetFloat("Time", t);

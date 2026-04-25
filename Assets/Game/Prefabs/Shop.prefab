@@ -242,6 +242,7 @@ MonoBehaviour:
   _lockedPriceColor: {r: 0.8509804, g: 0.09411765, b: 0.08627451, a: 1}
   _buySound: {fileID: 8300000, guid: 374deb66b7ebac64d8721aa6842b285d, type: 3}
   _sellSound: {fileID: 8300000, guid: 5bd89b1fead4d534c9323f07a366e5e2, type: 3}
+  _spinSound: {fileID: 8300000, guid: 759eba67cd3c8744b9332887b322dea5, type: 3}
   _isSale: 0
   _respawnTime: 3
   _showingTime: 0.5
