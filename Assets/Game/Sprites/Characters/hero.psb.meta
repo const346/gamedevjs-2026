@@ -127,8 +127,8 @@ ScriptedImporter:
       serializedVersion: 2
       x: 788
       y: 4
-      width: 230
-      height: 252
+      width: 232
+      height: 255
     spriteID: d034ab5a152e73147819a35a171e383c
     spriteBone: []
     spriteOutline: []
@@ -192,7 +192,7 @@ ScriptedImporter:
     rect:
       serializedVersion: 2
       x: 788
-      y: 264
+      y: 267
       width: 100
       height: 99
     spriteID: bcbab7fbaf7928e4caea46688438006e
@@ -203,7 +203,7 @@ ScriptedImporter:
     indices: 
     edges: []
     tessellationDetail: 0
-    uvTransform: {x: 788, y: 264}
+    uvTransform: {x: 788, y: 267}
     spritePosition: {x: 126, y: 167}
   - name: gear_4
     originalName: 
@@ -280,7 +280,7 @@ ScriptedImporter:
     rect:
       serializedVersion: 2
       x: 896
-      y: 264
+      y: 267
       width: 74
       height: 75
     spriteID: 3c99928198cee3647aaecf2d3a2ac470
@@ -291,7 +291,7 @@ ScriptedImporter:
     indices: 
     edges: []
     tessellationDetail: 0
-    uvTransform: {x: 896, y: 264}
+    uvTransform: {x: 896, y: 267}
     spritePosition: {x: 42, y: 267}
   - name: inside
     originalName: 
@@ -534,7 +534,7 @@ ScriptedImporter:
     parentIndex: -1
     spriteID: bcbab7fbaf7928e4caea46688438006e
     layerID: 52
-    mosaicPosition: {x: 788, y: 264}
+    mosaicPosition: {x: 788, y: 267}
     flatten: 0
     isImported: 1
     isVisible: 1
@@ -574,7 +574,7 @@ ScriptedImporter:
     parentIndex: -1
     spriteID: 3c99928198cee3647aaecf2d3a2ac470
     layerID: 48
-    mosaicPosition: {x: 896, y: 264}
+    mosaicPosition: {x: 896, y: 267}
     flatten: 0
     isImported: 1
     isVisible: 1
