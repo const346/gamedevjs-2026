@@ -1184,10 +1184,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Thrower
   _bulletPrefab: {fileID: -4601973697588844153, guid: 288f7cfe022a8a8468661096344f8c2e, type: 3}
-  _spawnAnchor: {fileID: 1726562255955975793}
+  _gunAnchor: {fileID: 1726562255955975793}
   _throwSound: {fileID: 8300000, guid: eae024d314aba2148b3b68c3e0b128ea, type: 3}
   _faceThrowDirection: 1
-  _defaultAngle: 45
 --- !u!1 &6858585157421047040
 GameObject:
   m_ObjectHideFlags: 0

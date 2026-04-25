@@ -366,7 +366,7 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2581828999467440632}
-  - {fileID: 5099541587304906332}
+  - {fileID: 6387483332728577321}
   - {fileID: 8906366652596844}
   m_Father: {fileID: 1260614032091364303}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -380,7 +380,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3547735459046477580}
   - component: {fileID: 1512213881848148339}
-  - component: {fileID: 2459089987061295031}
   m_Layer: 0
   m_Name: Tower
   m_TagString: Untagged
@@ -419,28 +418,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Generator
   _gear: {fileID: 2288271293979726225}
-  _thrower: {fileID: 2459089987061295031}
+  _thrower: {fileID: 3005609842527518927}
+  _animator: {fileID: 2017428084768483815}
+  _onlyActive: {fileID: 0}
   _spawnInterval: 240
   throwAngle: -220
   throwForce: 12
   throwAngleVariance: 25
   throwForceVariance: 2
---- !u!114 &2459089987061295031
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4991126470317860680}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 781193cbd9d554a4583bea4cda785895, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Thrower
-  _bulletPrefab: {fileID: -4601973697588844153, guid: 288f7cfe022a8a8468661096344f8c2e, type: 3}
-  _spawnAnchor: {fileID: 3494006804116581296}
-  _throwSound: {fileID: 8300000, guid: eae024d314aba2148b3b68c3e0b128ea, type: 3}
-  _faceThrowDirection: 1
 --- !u!1 &5053301787608720519
 GameObject:
   m_ObjectHideFlags: 0
@@ -557,14 +542,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6185015067202104810}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.086, y: 4.185, z: 0}
-  m_LocalScale: {x: -1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5557388619030049598}
   - {fileID: 3633291990918566984}
-  m_Father: {fileID: 3255455294983873243}
+  m_Father: {fileID: 6387483332728577321}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &2017428084768483815
 Animator:
@@ -588,6 +573,55 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &8404033590051462290
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6387483332728577321}
+  - component: {fileID: 3005609842527518927}
+  m_Layer: 0
+  m_Name: Weapon Container
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6387483332728577321
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8404033590051462290}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.086, y: 4.185, z: 0}
+  m_LocalScale: {x: -1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5099541587304906332}
+  m_Father: {fileID: 3255455294983873243}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3005609842527518927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8404033590051462290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 781193cbd9d554a4583bea4cda785895, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Thrower
+  _bulletPrefab: {fileID: -4601973697588844153, guid: 288f7cfe022a8a8468661096344f8c2e, type: 3}
+  _gunAnchor: {fileID: 5099541587304906332}
+  _throwSound: {fileID: 8300000, guid: eae024d314aba2148b3b68c3e0b128ea, type: 3}
+  _faceThrowDirection: 1
 --- !u!1001 &7172203757029592568
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -4,7 +4,7 @@ using UnityEngine;
 public class Thrower : MonoBehaviour
 {
     [SerializeField] private Rigidbody2D _bulletPrefab;
-    [SerializeField] private Transform _spawnAnchor; // gun anchor
+    [SerializeField] private Transform _gunAnchor;
     [SerializeField] private AudioClip _throwSound;
     [Space]
     [SerializeField] private bool _faceThrowDirection = true;
@@ -15,21 +15,28 @@ public class Thrower : MonoBehaviour
 
     private void Start()
     {
-        _defaultAngle = _spawnAnchor.localRotation.eulerAngles.z;
+        _defaultAngle = _gunAnchor.localRotation.eulerAngles.z;
     }
 
     public void Throw(Vector2 force)
     {
-        var bullet = Instantiate(_bulletPrefab, _spawnAnchor.position, Quaternion.identity);
+        var bullet = Instantiate(_bulletPrefab, _gunAnchor.position, Quaternion.identity);
         bullet.AddForce(force, ForceMode2D.Impulse);
 
         if (_faceThrowDirection)
         {
             var angle = Vector2.Angle(force, Vector2.right);
             bullet.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+
+            var localForce = transform.localScale * force;
+            var visualAngle = Vector2.Angle(localForce, Vector2.right);
+            _gunAnchor.transform.localRotation = Quaternion.Euler(0f, 0f, visualAngle);
         }
 
-        AudioSource.PlayClipAtPoint(_throwSound, _spawnAnchor.position);
+        _lastThrowTime = Time.time;
+        _isThrowing = false;
+
+        AudioSource.PlayClipAtPoint(_throwSound, _gunAnchor.position);
     }
 
     public void Throw(float target, float velocity, float height)
@@ -57,26 +64,25 @@ public class Thrower : MonoBehaviour
                 yield break;
             }
 
-            var startAngle = _spawnAnchor.localRotation.eulerAngles.z;
+            var startAngle = _gunAnchor.localRotation.eulerAngles.z;
 
             var target = enemy.transform.position.x;
             var velocity = enemy.Velocity;
             force = MathTool.Aim(start, target, velocity, gravity, height);
-            Debug.DrawRay(_spawnAnchor.position, force.normalized * 2f, Color.red);
+            Debug.DrawRay(_gunAnchor.position, force.normalized * 2f, Color.red);
 
             var localForce =  transform.localScale * force;
             var visualAngle = Vector2.Angle(localForce, Vector2.right);
             var angle = Mathf.LerpAngle(startAngle, visualAngle, t);
 
-            _spawnAnchor.localRotation = Quaternion.Euler(0, 0, angle);
+            _gunAnchor.localRotation = Quaternion.Euler(0, 0, angle);
 
             yield return null;
         }
 
         Throw(force);
 
-        _lastThrowTime = Time.time;
-        _isThrowing = false;
+
 
         yield return new WaitForSeconds(delayAfter);
 
@@ -86,10 +92,10 @@ public class Thrower : MonoBehaviour
     {
         if (!_isThrowing && Time.time - _lastThrowTime > 2f)
         {
-            var currentAngle = _spawnAnchor.localRotation.eulerAngles.z;
+            var currentAngle = _gunAnchor.localRotation.eulerAngles.z;
             var angle = Mathf.LerpAngle(currentAngle, _defaultAngle, Time.deltaTime);
 
-            _spawnAnchor.localRotation = Quaternion.Euler(0, 0, angle);
+            _gunAnchor.localRotation = Quaternion.Euler(0, 0, angle);
         }
     }
 }

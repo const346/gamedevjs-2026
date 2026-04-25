@@ -4,6 +4,8 @@ public class Generator : MonoBehaviour
 {
     [SerializeField] private Gear _gear;
     [SerializeField] private Thrower _thrower;
+    [SerializeField] private Animator _animator; 
+    [SerializeField] private Transform _onlyActive;
     [Space]
     [SerializeField] private float _spawnInterval = 30f;
     [SerializeField] private float throwAngle;
@@ -12,6 +14,7 @@ public class Generator : MonoBehaviour
     [SerializeField] private float throwForceVariance = 2f;
 
     private float _accumulated;
+    private float _lastStepTime = -100;
 
     private void Awake()
     {
@@ -21,6 +24,8 @@ public class Generator : MonoBehaviour
     private void OnGearSimulate(float step)
     {
         _accumulated += Mathf.Abs(step);
+        var time = (_accumulated % _spawnInterval) / _spawnInterval;
+
         if (_accumulated >= _spawnInterval)
         {
             _accumulated -= _spawnInterval;
@@ -32,6 +37,28 @@ public class Generator : MonoBehaviour
             var force = (fV + throwForce) * direction;
 
             _thrower.Throw(force);
+        }
+
+        if (_animator != null)
+        {
+            _animator.SetFloat("Time", time);
+        }
+
+        _lastStepTime = Time.time;
+    }
+
+    private void Update()
+    {
+        var isActive = Time.time - _lastStepTime < 0.5f;
+
+        if (_animator != null)
+        {
+            _animator.SetFloat("Active", isActive ? 1 : 0);
+        }
+
+        if (_onlyActive != null)
+        {
+            _onlyActive.gameObject.SetActive(isActive);
         }
     }
 }

@@ -82,6 +82,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Generator
   _gear: {fileID: 3875729341797952772}
   _thrower: {fileID: 3623669004427170684}
+  _animator: {fileID: 5631435985345810123}
+  _onlyActive: {fileID: 3076539907569745054}
   _spawnInterval: 120
   throwAngle: 90
   throwForce: 4
@@ -100,7 +102,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Thrower
   _bulletPrefab: {fileID: 6864894875085276615, guid: aa9748f6d6d7ee044a3064cf4ba93c2a, type: 3}
-  _spawnAnchor: {fileID: 4769156026461380280}
+  _gunAnchor: {fileID: 4769156026461380280}
   _throwSound: {fileID: 8300000, guid: 1ea7b713d79f61f40bb5ed400ddb6673, type: 3}
   _faceThrowDirection: 0
 --- !u!1 &3660785274180854843
