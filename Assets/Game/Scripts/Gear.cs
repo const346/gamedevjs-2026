@@ -34,6 +34,11 @@ public class Gear : MonoBehaviour, IDraggable
     [SerializeField] private Transform _toothContainer;
     [Space]
     [SerializeField] private Sprite[] _toothSprites;
+    [Space]
+    [SerializeField] private AudioClip _magnetMeshSound;
+    [SerializeField] private AudioClip _magnetAxialSound; 
+    [SerializeField] private AudioClip _magnetChangeLayerSound;
+    [SerializeField] private AudioClip _magnetDiconnectSound;
 
     public bool IsDraggable
     {

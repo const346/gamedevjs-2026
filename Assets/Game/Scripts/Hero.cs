@@ -3,35 +3,42 @@ using UnityEngine;
 
 public class Hero : MonoBehaviour
 {
-    [SerializeField] private Wallet _wallet;
     [SerializeField] private Animator _animator;
     [SerializeField] private Thrower _thrower;
-    [SerializeField] private Transform _target;
+    [Space]
+    [SerializeField] private AudioClip _coinCollectSound;
+    [SerializeField] private AudioClip _tapSound;
+    [Space]
     [SerializeField] private float _speed = 5f;
-    [Space]
     [SerializeField] private float _attackHeight = 1.3f;
-    [Space]
     [SerializeField] private float _lookDistance = 12;
     [SerializeField] private float _retreatDistance = 6;
     [SerializeField] private float _waypointDistance = 4;
 
-    [SerializeField] private AudioClip _coinCollectSound;
-    [SerializeField] private AudioClip _tapSound;
-
+    private Wallet _wallet;
     private bool _breakAction;
     private float _lastMoveTime;
+    private float _moveToPosition;
 
     public void MoveTo(Vector3 position)
     {
         _breakAction = true;
-        _target.position = position;
+        _moveToPosition = position.x;
 
         AudioSource.PlayClipAtPoint(_tapSound, position);
     }
 
     private void Start()
     {
+        _wallet = FindAnyObjectByType<Wallet>();
+
         StartCoroutine(UpdateAgent());
+    }
+
+    private void LateUpdate()
+    {
+        var isMove = Time.time == _lastMoveTime;
+        _animator.SetBool("IsMove", isMove);
     }
 
     private IEnumerator UpdateAgent()
@@ -41,9 +48,7 @@ public class Hero : MonoBehaviour
             if (_breakAction)
             {
                 _breakAction = false;
-
-                var target = _target.transform.position.x;
-                yield return MoveAction(target);
+                yield return MoveAction(_moveToPosition);
             }
             else if (TryDetectEnemy(out var foundEnemy))
             {
@@ -76,14 +81,14 @@ public class Hero : MonoBehaviour
             else if (Time.time - _lastMoveTime > Random.Range(7f, 15f))
             {
                 var range = Random.Range(-_waypointDistance, _waypointDistance);
-                var target = _target.transform.position.x + range;
+                var target = _moveToPosition + range;
 
                 yield return MoveAction(target);
             }
-            else if (Mathf.Abs(_target.position.x - transform.position.x) > _waypointDistance * 1.5f &&
+            else if (Mathf.Abs(_moveToPosition - transform.position.x) > _waypointDistance * 1.5f &&
                 Time.time - _lastMoveTime > 1)
             {
-                yield return MoveAction(_target.position.x);
+                yield return MoveAction(_moveToPosition);
             }
 
             yield return null;
@@ -136,15 +141,8 @@ public class Hero : MonoBehaviour
 
     private IEnumerator AttackAction(Enemy enemy)
     {
-        yield return new WaitForSeconds(1f);
-
-        if (enemy != null)
-        {
-            var height = Random.Range(_attackHeight * 0.5f, _attackHeight * 2f);
-            _thrower.Throw(enemy.transform.position.x, enemy.Velocity, height);
-
-            yield return new WaitForSeconds(0.2f);
-        }
+        var height = Random.Range(_attackHeight * 0.5f, _attackHeight * 2f);
+        yield return _thrower.Throw(enemy, height, 1.2f, 0.5f);
     }
 
     private bool TryDetectEnemy(out Enemy foundEnemy, float look = 0)

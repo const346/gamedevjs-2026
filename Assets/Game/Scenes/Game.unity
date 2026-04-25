@@ -24546,6 +24546,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tower
       objectReference: {fileID: 0}
+    - target: {fileID: 4991126470317860680, guid: 7e57db92ea8878f4aa0650dbde24250f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -24679,6 +24683,10 @@ PrefabInstance:
     - target: {fileID: 3630255456362125676, guid: e184a8ce619707745b622c1781875460, type: 3}
       propertyPath: m_Name
       value: Farm
+      objectReference: {fileID: 0}
+    - target: {fileID: 3630255456362125676, guid: e184a8ce619707745b622c1781875460, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4400652541425530011, guid: e184a8ce619707745b622c1781875460, type: 3}
       propertyPath: m_LocalPosition.x
