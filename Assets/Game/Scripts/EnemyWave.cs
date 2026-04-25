@@ -7,13 +7,12 @@ public class EnemyWave : MonoBehaviour, IGameTask
 {
     [SerializeField] private float _spawnMinInterval = 1f;
     [SerializeField] private float _spawnMaxInterval = 4f;
-
+    [SerializeField] private Vector3 _spawnPosition = new Vector3(-51, 0, 0);
     [Space]
     [SerializeField] private float _startDelay = 5f;
     [SerializeField] private float _attackDuration = 30f;
     [SerializeField] private float _retreatDuration = 30f;
     [SerializeField] private float _endDelay = 5f;
-
     [Space]
     [SerializeField] private EnemyContainer[] _enemies;
 
@@ -41,7 +40,7 @@ public class EnemyWave : MonoBehaviour, IGameTask
 
         foreach (var enemyPrefab in enemyPrefabs)
         {
-            var enemy = Instantiate(enemyPrefab, transform.position, Quaternion.identity);
+            var enemy = Instantiate(enemyPrefab, _spawnPosition, Quaternion.identity);
             enemy.AttackTo(enemyTarget);
 
             enemies.Add(enemy);

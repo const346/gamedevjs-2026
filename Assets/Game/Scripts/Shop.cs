@@ -10,6 +10,9 @@ public class Shop : MonoBehaviour
     [SerializeField] private Transform _gearHook;
     [SerializeField] private Gear _gearAnchor;
     [Space]
+    [SerializeField] private Color _priceColor;
+    [SerializeField] private Color _lockedPriceColor; 
+    [Space]
     [SerializeField] private bool _isSale;
     [SerializeField] private float _respawnTime = 3;
     [SerializeField] private float _showingTime = 0.5f;
@@ -22,6 +25,8 @@ public class Shop : MonoBehaviour
     private void Start()
     {
         _wallet = FindAnyObjectByType<Wallet>();
+
+        _label.color = _priceColor;
 
         if (_isSale)
         {
@@ -37,6 +42,8 @@ public class Shop : MonoBehaviour
     {
         _animator.SetFloat("Time", 1f); 
         yield return null;
+
+        _gearAnchor.gameObject.SetActive(true);
 
         var sellGear = default(Gear);
         yield return new WaitUntil(() =>
@@ -63,6 +70,8 @@ public class Shop : MonoBehaviour
 
         var price = sellGear.GetPrice() / 2;
         _wallet.Add(price);
+
+        _gearAnchor.gameObject.SetActive(false);
 
         for (var t = 0f; t < 1f; t += _showingTime * Time.deltaTime)
         {
@@ -100,6 +109,9 @@ public class Shop : MonoBehaviour
         yield return new WaitUntil(() =>
         {
             var isAvailable = _wallet.Balance >= price;
+
+            _label.color = isAvailable ?
+                _priceColor : _lockedPriceColor;
 
             _currentGear.IsDraggable = isAvailable;
 

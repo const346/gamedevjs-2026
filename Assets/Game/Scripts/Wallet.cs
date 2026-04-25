@@ -6,6 +6,11 @@ public class Wallet : MonoBehaviour
     [SerializeField] private TMP_Text _balanceText;
     [SerializeField] private int _balance = 10;
 
+    private float _lastSyncTime;
+    private int _lastVisualBalance;
+
+    private int _currentVisualBalance;
+
     public int Balance 
     {
         get => _balance;
@@ -15,7 +20,6 @@ public class Wallet : MonoBehaviour
     public void Add(int amount)
     {
         Balance += amount;
-        UpdateView();
     }
 
     public bool TrySpend(int amount)
@@ -26,23 +30,36 @@ public class Wallet : MonoBehaviour
         }
 
         Balance -= amount;
-        UpdateView();
 
         return true;
     }
 
-    private void UpdateView()
-    {
-        _balanceText.text = Balance.ToString();
-    }
-
     private void Start()
     {
-        UpdateView();
+        _currentVisualBalance = _balance;
+        _balanceText.text = _currentVisualBalance.ToString();
     }
 
     private void OnValidate()
     {
-        UpdateView();
+        _currentVisualBalance = _balance;
+        _balanceText.text = _currentVisualBalance.ToString();
+    }
+
+    private void Update()
+    {
+        if (_balance != _currentVisualBalance)
+        {
+            var t = (Time.time - _lastSyncTime) * 1.5f;
+            var v = Mathf.Lerp(_lastVisualBalance, _balance, t);
+
+            _currentVisualBalance = Mathf.FloorToInt(v);
+            _balanceText.text = _currentVisualBalance.ToString();
+        }
+        else
+        {
+            _lastSyncTime = Time.time;
+            _lastVisualBalance = _currentVisualBalance;
+        }
     }
 }
