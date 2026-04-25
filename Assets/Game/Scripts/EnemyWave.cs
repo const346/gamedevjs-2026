@@ -59,11 +59,6 @@ public class EnemyWave : MonoBehaviour, IGameTask
         var breakTime = Time.time + _attackDuration;
         yield return new WaitUntil(() => enemies.Count(x => x != null) <= 0 || Time.time >= breakTime || !enemyTarget.IsLive);
 
-        if (!enemyTarget.IsLive)
-        {
-            yield break;
-        }
-
         if (enemies.Any(x => x != null))
         {
             Debug.Log($"ENEMY WAVE | {name} | RETREAT");
@@ -71,6 +66,11 @@ public class EnemyWave : MonoBehaviour, IGameTask
             foreach (var enemy in enemies)
             {
                 enemy.Retreat();
+            }
+
+            if (!enemyTarget.IsLive)
+            {
+                yield break;
             }
 
             breakTime = Time.time + _retreatDuration;

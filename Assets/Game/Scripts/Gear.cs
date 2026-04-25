@@ -35,10 +35,12 @@ public class Gear : MonoBehaviour, IDraggable
     [Space]
     [SerializeField] private Sprite[] _toothSprites;
     [Space]
+    [SerializeField] private AudioClip _gearClickSound;
     [SerializeField] private AudioClip _magnetMeshSound;
     [SerializeField] private AudioClip _magnetAxialSound; 
-    [SerializeField] private AudioClip _magnetChangeLayerSound;
-    [SerializeField] private AudioClip _magnetDiconnectSound;
+    [SerializeField] private AudioClip _magnetDiconnectSound; 
+    [SerializeField] private AudioClip _brokenToothSound;
+    [SerializeField] private AudioClip _catchSound;
     [SerializeField] private AudioClip _fallSound;
 
     public bool IsDraggable
@@ -132,28 +134,21 @@ public class Gear : MonoBehaviour, IDraggable
         {
             if (joint != parent)
             {
-                //// break tooth 
-                //if (TeethDamage < _maxTeethDamage)
-                //{
-                //    var wear01 = Mathf.InverseLerp(_minWearout, _maxWearout, _wearout);
-                //    if (wear01 > 0)
-                //    {
-                //        var effectiveQuality = Mathf.Lerp(1f, _quality, wear01);
-                //        var breakChance = 1f - Mathf.Pow(effectiveQuality, Mathf.Abs(delta) / 360f);
+                // break tooth 
+                if (TeethDamage < _maxTeethDamage)
+                {
+                    var wear01 = Mathf.InverseLerp(_minWearout, _maxWearout, _wearout);
+                    if (wear01 > 0)
+                    {
+                        var effectiveQuality = Mathf.Lerp(1f, _quality, wear01);
+                        var breakChance = 1f - Mathf.Pow(effectiveQuality, Mathf.Abs(delta) / 360f);
 
-                //        if (UnityEngine.Random.value < breakChance)
-                //        {
-                //            BreakTooth(joint.transform.position - transform.position);
-                //        }
-                //    }
-                //}
-
-                // for test
-                //var toothA = GetTooth(joint.transform.position - transform.position);
-                //var toothB = joint.GetTooth(transform.position - joint.transform.position);
-                //var k = toothA.gameObject.activeSelf && toothA.gameObject.activeSelf;
-
-                //var s = k ? 1 : 0.5f;
+                        if (UnityEngine.Random.value < breakChance)
+                        {
+                            BreakTooth(joint.transform.position - transform.position);
+                        }
+                    }
+                }
 
                 joint.Simulate(this, delta );
             }
@@ -225,6 +220,8 @@ public class Gear : MonoBehaviour, IDraggable
             var force = forceDirection * UnityEngine.Random.Range(8, 12);
 
             body.AddForceAtPosition(force, forcePosition, ForceMode2D.Impulse);
+
+            AudioSource.PlayClipAtPoint(_brokenToothSound, transform.position);
         }
     }
 
@@ -245,8 +242,11 @@ public class Gear : MonoBehaviour, IDraggable
 
     public void Drag(Vector2 target)
     {
-        _gearGraph.ClearJoints(this);
+        var hasAxial = _gearGraph.Get(Position).Count() > 1;
+        var hasJoints = _gearGraph.GetJoints(this).Any();
+        var savePosition = target;
 
+        _gearGraph.ClearJoints(this);
         Position = target;
 
         var sortOffset = 0;
@@ -277,6 +277,7 @@ public class Gear : MonoBehaviour, IDraggable
             }
         }
 
+        var isJointFound = false;
         if (!isAxialFound && TryFindNearGear(Position, out var firstGear, g => g.IgnoreJoints))
         {
             _gearGraph.CreateJoint(this, firstGear);
@@ -289,6 +290,8 @@ public class Gear : MonoBehaviour, IDraggable
 
             Position = firstGear.Position - direction * distance;
             Synchronize(firstGear, true);
+
+            isJointFound = true;
 
             if (TryFindNearGear(Position, out var secondGear, g => g.Position == firstGear.Position || g.IgnoreJoints))
             {
@@ -337,6 +340,29 @@ public class Gear : MonoBehaviour, IDraggable
         }
 
         Sort(this, sortOffset);
+
+        if (savePosition != Position)
+        {
+            if (!hasAxial && isAxialFound)
+            {
+                AudioSource.PlayClipAtPoint(_magnetAxialSound, transform.position);
+            }
+            else if (!hasJoints && isJointFound)
+            {
+                AudioSource.PlayClipAtPoint(_magnetMeshSound, transform.position);
+            }
+        }
+        else
+        {
+            if (hasAxial && !isAxialFound)
+            {
+                AudioSource.PlayClipAtPoint(_magnetDiconnectSound, transform.position);
+            }
+            else if (hasJoints && !isJointFound)
+            {
+                AudioSource.PlayClipAtPoint(_magnetDiconnectSound, transform.position);
+            }
+        }
     }
 
     public void DragStart()
@@ -345,6 +371,13 @@ public class Gear : MonoBehaviour, IDraggable
         _body.bodyType = RigidbodyType2D.Static;
 
         IsDragging = true;
+
+        var hasAxial = _gearGraph.Get(Position).Count() > 1;
+        var hasJoints = _gearGraph.GetJoints(this).Any();
+        if (!hasAxial && !hasJoints)
+        {
+            AudioSource.PlayClipAtPoint(_catchSound, transform.position);
+        }
     }
 
     public void DragEnd()
@@ -353,22 +386,27 @@ public class Gear : MonoBehaviour, IDraggable
             Physics2D.OverlapPoint(transform.position, _placementMask) == null) &&
             _gearGraph.Get(Position).Count() < 2)
         {
-            foreach (var gear in _gearGraph.All())
-            {
-                if (gear._body.bodyType == RigidbodyType2D.Dynamic)
-                {
-                    var offset = _sortingGroup.sortingOrder < gear._sortingGroup.sortingOrder ? 1 : -1;
-                    gear._sortingGroup.sortingOrder += offset;
-                }
-            }
-
-            _body.bodyType = RigidbodyType2D.Dynamic;
-            _gearGraph.ClearJoints(this);
+            Drop();
         }
 
         _body.simulated = true;
 
         IsDragging = false;
+    }
+
+    public void Drop()
+    {
+        foreach (var gear in _gearGraph.All())
+        {
+            if (gear._body.bodyType == RigidbodyType2D.Dynamic)
+            {
+                var offset = _sortingGroup.sortingOrder < gear._sortingGroup.sortingOrder ? 1 : -1;
+                gear._sortingGroup.sortingOrder += offset;
+            }
+        }
+
+        _body.bodyType = RigidbodyType2D.Dynamic;
+        _gearGraph.ClearJoints(this);
     }
 
     private void Synchronize(Gear gear, bool selfApply = false)

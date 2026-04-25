@@ -5,6 +5,8 @@ public class EnemyTarget : MonoBehaviour
     [SerializeField] private int _health = 20; 
     [SerializeField] private BoxCollider2D[] _damageZones;
     [SerializeField] private Animator _animator;
+    [SerializeField] private Gear _gear;
+    [SerializeField] private Motor _motor;
 
     public bool IsLive => _health > 0;
 
@@ -18,6 +20,9 @@ public class EnemyTarget : MonoBehaviour
         if (_animator != null)
         {
             _animator.SetTrigger("Death");
+
+            _gear.Drop();
+            _motor.enabled = false;
         }
     }
 
