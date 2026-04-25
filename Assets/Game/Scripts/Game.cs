@@ -46,8 +46,12 @@ public class Game : MonoBehaviour
 
         var cameraTarget = _enemyTarget.transform.position.x;
         yield return _cameraController.MoveTo(cameraTarget);
-        
-        _enemyTarget.Death();
+
+        if (!_enemyTarget.IsLive)
+        {
+            _enemyTarget.Death();
+            yield return new WaitForSeconds(2f);
+        }
 
         yield return new WaitForSeconds(2f);
 
@@ -64,6 +68,16 @@ public class Game : MonoBehaviour
     public void ResetGame()
     {
         SceneManager.LoadScene(0);
+    }
+
+    public void PauseGame()
+    {
+        GetComponent<TimeScaler>().TimeScale = 0;
+    }
+
+    public void ResumeGame()
+    {
+        GetComponent<TimeScaler>().TimeScale = 1;
     }
 }
 

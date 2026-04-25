@@ -6,34 +6,48 @@ public class Enemy : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private Collider2D _collider;
     [SerializeField] private AudioClip _deathSound;
-    [SerializeField] private float _speed = 0.5f; 
+    [SerializeField] private float _speed = 0.5f;
+    [SerializeField] private int _health = 1;
     [SerializeField] private float _deathDuration = 2f;
     [SerializeField] private GameObject _rewardPrefab;
     [SerializeField] private Vector2 _rewardOffset = Vector2.up;
 
     private bool _breakAction;
     private bool _isRetreat; 
-    private bool _isLive = true;
     private float _speedScaler = 1;
     private EnemyTarget _target;
 
     public float Velocity { get; private set; }
 
+    public bool IsLive => _health > 0;
+
     public void OnDamage()
     {
-        if (_isLive)
+        if (_health > 0)
         {
-            _animator.SetTrigger("Death");
-
-            Destroy(_collider);
-            Destroy(gameObject, _deathDuration);
-
-            SpawnReward();
-
-            AudioSource.PlayClipAtPoint(_deathSound, transform.position);
-
-            _isLive = false;
+            _health--;
         }
+        else
+        {
+            return;
+        }
+
+        if (_health == 0)
+        {
+            Death();
+        }
+    }
+
+    private void Death()
+    {
+        _animator.SetTrigger("Death");
+
+        Destroy(_collider);
+        Destroy(gameObject, _deathDuration);
+
+        SpawnReward();
+
+        AudioSource.PlayClipAtPoint(_deathSound, transform.position);
     }
 
     private void SpawnReward()
@@ -103,7 +117,7 @@ public class Enemy : MonoBehaviour
             var d = Mathf.Abs(m);
             var v = Mathf.Sign(m) * _speed * _speedScaler;
 
-            if (d < 0.01f || _breakAction || !_isLive)
+            if (d < 0.01f || _breakAction || !IsLive)
             {
                 yield break;
             }

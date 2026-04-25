@@ -1,10 +1,12 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Hero : MonoBehaviour
 {
     [SerializeField] private Animator _animator;
-    [SerializeField] private Thrower _thrower;
+    [SerializeField] private Thrower _thrower; 
+    [SerializeField] private GameObject _pointerPrefab;
     [Space]
     [SerializeField] private AudioClip _coinCollectSound;
     [SerializeField] private AudioClip _tapSound;
@@ -25,12 +27,17 @@ public class Hero : MonoBehaviour
         _breakAction = true;
         _moveToPosition = position.x;
 
+        var pointer = Instantiate(_pointerPrefab, position, Quaternion.identity);
+        Destroy(pointer, 1f);
+
         AudioSource.PlayClipAtPoint(_tapSound, position);
     }
 
     private void Start()
     {
         _wallet = FindAnyObjectByType<Wallet>();
+
+        _moveToPosition = transform.position.x;
 
         StartCoroutine(UpdateAgent());
     }

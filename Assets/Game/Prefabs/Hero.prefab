@@ -1164,6 +1164,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   _animator: {fileID: 4344319180485100677}
   _thrower: {fileID: -4605508149135930718}
+  _pointerPrefab: {fileID: 8894846663722404173, guid: 70c43f3aada6ad4409c8d92373d9b48d, type: 3}
   _coinCollectSound: {fileID: 8300000, guid: 4e4871357bf23024cb12d649b320d1ca, type: 3}
   _tapSound: {fileID: 8300000, guid: 7e865e90ec641024aa4193157cac5231, type: 3}
   _speed: 5
