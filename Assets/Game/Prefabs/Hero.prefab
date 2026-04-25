@@ -159,7 +159,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 7
   m_SortAtRoot: 0
   m_Sort3DAs2D: 0
 --- !u!1 &878046558847966339
@@ -1150,6 +1150,8 @@ MonoBehaviour:
   _lookDistance: 12
   _retreatDistance: 8
   _waypointDistance: 4
+  _coinCollectSound: {fileID: 8300000, guid: 4e4871357bf23024cb12d649b320d1ca, type: 3}
+  _tapSound: {fileID: 8300000, guid: 7e865e90ec641024aa4193157cac5231, type: 3}
 --- !u!114 &-4605508149135930718
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1164,6 +1166,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Thrower
   _bulletPrefab: {fileID: -4601973697588844153, guid: 288f7cfe022a8a8468661096344f8c2e, type: 3}
   _spawnAnchor: {fileID: 1726562255955975793}
+  _throwSound: {fileID: 8300000, guid: eae024d314aba2148b3b68c3e0b128ea, type: 3}
+  _faceThrowDirection: 1
   _destroyDelay: 10
 --- !u!1 &6858585157421047040
 GameObject:

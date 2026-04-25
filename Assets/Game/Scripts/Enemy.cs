@@ -4,6 +4,8 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private Animator _animator;
+    [SerializeField] private Collider2D _collider;
+    [SerializeField] private AudioClip _deathSound;
     [SerializeField] private float _speed = 0.5f; 
     [SerializeField] private float _deathDuration = 2f;
     [SerializeField] private GameObject _rewardPrefab;
@@ -22,9 +24,13 @@ public class Enemy : MonoBehaviour
         if (_isLive)
         {
             _animator.SetTrigger("Death");
+
+            Destroy(_collider);
             Destroy(gameObject, _deathDuration);
 
             SpawnReward();
+
+            AudioSource.PlayClipAtPoint(_deathSound, transform.position);
 
             _isLive = false;
         }

@@ -11,7 +11,10 @@ public class Shop : MonoBehaviour
     [SerializeField] private Gear _gearAnchor;
     [Space]
     [SerializeField] private Color _priceColor;
-    [SerializeField] private Color _lockedPriceColor; 
+    [SerializeField] private Color _lockedPriceColor;
+    [Space]
+    [SerializeField] private AudioClip _buySound;
+    [SerializeField] private AudioClip _sellSound;
     [Space]
     [SerializeField] private bool _isSale;
     [SerializeField] private float _respawnTime = 3;
@@ -71,6 +74,8 @@ public class Shop : MonoBehaviour
         var price = sellGear.GetPrice() / 2;
         _wallet.Add(price);
 
+        AudioSource.PlayClipAtPoint(_sellSound, transform.position);
+
         _gearAnchor.gameObject.SetActive(false);
 
         for (var t = 0f; t < 1f; t += _showingTime * Time.deltaTime)
@@ -129,6 +134,8 @@ public class Shop : MonoBehaviour
 
         _gearAnchor.gameObject.SetActive(false);
         _wallet.TrySpend(price);
+
+        AudioSource.PlayClipAtPoint(_buySound, transform.position);
 
         StartCoroutine(BuyProcess());
     }

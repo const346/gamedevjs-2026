@@ -41,6 +41,14 @@ public class DragController : MonoBehaviour, /// TODO: rename InputController
             return;
         }
 
+        var screenSize = new Vector2(Screen.width, Screen.height);
+        var viewportPosition = data.position / screenSize;
+
+        if (viewportPosition.y > 0.4f) // or 0.2f
+        {
+            return;
+        }
+
         var worldPosition = ScreenToWorld(data.position);
         worldPosition.y = 0;
         worldPosition.z = 0;

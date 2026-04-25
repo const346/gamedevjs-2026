@@ -162,6 +162,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   _animator: {fileID: 4932776952270526531}
+  _collider: {fileID: 5593216038860708048}
+  _deathSound: {fileID: 8300000, guid: 8f567dd9ea4d516478fc8cfc7765db28, type: 3}
   _speed: 1
   _deathDuration: 2
   _rewardPrefab: {fileID: 5114463823818624750, guid: aa9748f6d6d7ee044a3064cf4ba93c2a, type: 3}

@@ -3,9 +3,12 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Arrow : MonoBehaviour
 {
+    [SerializeField] private float _lifetime = 15f;
     [SerializeField] private Vector2 _tail = Vector2.left;
     [SerializeField] [Range(0, 1f)] private float _tailFriction = 1f;
-
+    [SerializeField] private AudioClip _impactToGroundSound;
+    [SerializeField] private AudioClip _impactToEnemySound;
+    
     private Rigidbody2D _body;
     private Quaternion _lastRotation;
     private Vector3 _lastPosition;
@@ -13,6 +16,7 @@ public class Arrow : MonoBehaviour
     private void Awake()
     {
         _body = GetComponent<Rigidbody2D>();
+        Destroy(gameObject, _lifetime);
     }
 
     private void FixedUpdate()
@@ -36,6 +40,8 @@ public class Arrow : MonoBehaviour
         {
             enemy.OnDamage();
             Destroy(gameObject);
+
+            AudioSource.PlayClipAtPoint(_impactToEnemySound, transform.position);
         }
         else
         {
@@ -45,6 +51,8 @@ public class Arrow : MonoBehaviour
             _body.Sleep();
             _body.freezeRotation = true;
             _body.simulated = false;
+
+            AudioSource.PlayClipAtPoint(_impactToGroundSound, transform.position);
         }
     }
 }

@@ -2,15 +2,10 @@ using UnityEngine;
 
 public class Coin : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [SerializeField] private float _lifetime = 20f;
 
-    // Update is called once per frame
-    void Update()
+    private void Awake()
     {
-        
+        Destroy(gameObject, _lifetime);
     }
 }

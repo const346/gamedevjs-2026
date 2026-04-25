@@ -15,6 +15,9 @@ public class Hero : MonoBehaviour
     [SerializeField] private float _retreatDistance = 6;
     [SerializeField] private float _waypointDistance = 4;
 
+    [SerializeField] private AudioClip _coinCollectSound;
+    [SerializeField] private AudioClip _tapSound;
+
     private bool _breakAction;
     private float _lastMoveTime;
 
@@ -22,6 +25,8 @@ public class Hero : MonoBehaviour
     {
         _breakAction = true;
         _target.position = position;
+
+        AudioSource.PlayClipAtPoint(_tapSound, position);
     }
 
     private void Start()
@@ -196,6 +201,8 @@ public class Hero : MonoBehaviour
     {
         if (collision.gameObject.TryGetComponent<Coin>(out var _))
         {
+            AudioSource.PlayClipAtPoint(_coinCollectSound, transform.position);
+
             _wallet.Add(1);
             Destroy(collision.gameObject);
         }
