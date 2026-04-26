@@ -64,8 +64,6 @@ public class Enemy : MonoBehaviour
                 var rand = Random.Range(-2f, 2f);
                 body.AddForce(Vector2.up * 5 + Vector2.right * rand, ForceMode2D.Impulse);
             }
-
-            Destroy(obj, 15f); // ...
         }
     }
 

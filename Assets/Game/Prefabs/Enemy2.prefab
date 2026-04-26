@@ -165,10 +165,11 @@ MonoBehaviour:
   _collider: {fileID: 5593216038860708048}
   _deathSound: {fileID: 8300000, guid: 8f567dd9ea4d516478fc8cfc7765db28, type: 3}
   _speed: 1
-  _health: 2
+  _health: 3
   _deathDuration: 2
   _rewardPrefab: {fileID: 5114463823818624750, guid: aa9748f6d6d7ee044a3064cf4ba93c2a, type: 3}
   _rewardOffset: {x: 0, y: 1}
+  _attackSound: {fileID: 8300000, guid: d8faee1d087b88540beef1334a7d398a, type: 3}
 --- !u!1001 &5538021898244290370
 PrefabInstance:
   m_ObjectHideFlags: 0

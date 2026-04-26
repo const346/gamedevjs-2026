@@ -202,7 +202,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28c283fdb1d3a754f8966dafca26d93e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Coin
-  _lifetime: 20
+  _lifetime: 120
 --- !u!1 &7958815632501872661
 GameObject:
   m_ObjectHideFlags: 0
