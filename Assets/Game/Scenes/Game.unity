@@ -26791,6 +26791,8 @@ MonoBehaviour:
   _cameraController: {fileID: 519420033}
   _pageController: {fileID: 2040765701}
   _enemyTarget: {fileID: 42905870}
+  _waveInfo: {fileID: 517141402}
+  _hp: {fileID: 1328829920}
 --- !u!4 &2129974068
 Transform:
   m_ObjectHideFlags: 0

@@ -1,12 +1,16 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Game : MonoBehaviour
 {
     [SerializeField] private CameraController2D _cameraController;
     [SerializeField] private PageController _pageController;
     [SerializeField] private EnemyTarget _enemyTarget;
+    [SerializeField] private TMP_Text _waveInfo;
+    [SerializeField] private Image _hp;
 
     public int CurrentWave { get; private set; }
     public int TotalWave { get; private set; }
@@ -22,9 +26,16 @@ public class Game : MonoBehaviour
         StartCoroutine(Running());
     }
 
+    private void Update()
+    {
+        _hp.fillAmount = _enemyTarget.HealthNormalize;
+    }
+
     private IEnumerator Running()
     {
         TotalWave = transform.childCount;
+
+        _waveInfo.text = $"{CurrentWave + 1}/{TotalWave}";
 
         for (int i = 0; i < transform.childCount; i++)
         {
@@ -36,6 +47,7 @@ public class Game : MonoBehaviour
                 child.gameObject.SetActive(false);
 
                 CurrentWave++;
+                _waveInfo.text = $"{CurrentWave + 1}/{TotalWave}";
 
                 if (!_enemyTarget.IsLive)
                 {

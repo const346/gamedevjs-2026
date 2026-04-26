@@ -2,17 +2,25 @@ using UnityEngine;
 
 public class EnemyTarget : MonoBehaviour
 {
-    [SerializeField] private int _health = 20; 
+    [SerializeField] private int _health = 20; ///TODO: total health
     [SerializeField] private BoxCollider2D[] _damageZones;
     [SerializeField] private Animator _animator;
     [SerializeField] private Gear _gear;
     [SerializeField] private Motor _motor;
 
-    public bool IsLive => _health > 0;
+    public float HealthNormalize => hp / (float)_health;
+    public bool IsLive => hp > 0;
+
+    private int hp;
+
+    private void Start()
+    {
+        hp = _health;
+    }
 
     public void OnDamage()
     {
-        _health = Mathf.Max(0, _health - 1);
+        hp = Mathf.Max(0, hp - 1);
     }
 
     public void Death()
