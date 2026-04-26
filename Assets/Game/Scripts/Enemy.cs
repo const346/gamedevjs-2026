@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Enemy : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float _deathDuration = 2f;
     [SerializeField] private GameObject _rewardPrefab;
     [SerializeField] private Vector2 _rewardOffset = Vector2.up;
+    [SerializeField] private AudioClip _attackSound;
 
     private bool _breakAction;
     private bool _isRetreat; 
@@ -138,13 +140,17 @@ public class Enemy : MonoBehaviour
     private IEnumerator AttackAction(EnemyTarget target)
     {
         _animator.SetTrigger("Attack");
+
         UpdateDirection(target.transform.position.x);
 
         yield return new WaitForSeconds(0.5f);
 
         target.OnDamage();
 
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(0.25f);
+        AudioSource.PlayClipAtPoint(_attackSound, transform.position);
+
+        yield return new WaitForSeconds(1.25f);
     }
 
     private void UpdateDirection(float target)

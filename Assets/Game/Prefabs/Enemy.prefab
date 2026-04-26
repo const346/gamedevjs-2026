@@ -169,6 +169,7 @@ MonoBehaviour:
   _deathDuration: 2
   _rewardPrefab: {fileID: 5114463823818624750, guid: aa9748f6d6d7ee044a3064cf4ba93c2a, type: 3}
   _rewardOffset: {x: 0, y: 1}
+  _attackSound: {fileID: 8300000, guid: d8faee1d087b88540beef1334a7d398a, type: 3}
 --- !u!1001 &683727563861295698
 PrefabInstance:
   m_ObjectHideFlags: 0

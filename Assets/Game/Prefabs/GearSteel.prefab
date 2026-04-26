@@ -173,7 +173,7 @@ MonoBehaviour:
   _magnetAxialSound: {fileID: 8300000, guid: 5a51d2fecea000d4eb3d09aa651acd3a, type: 3}
   _magnetDiconnectSound: {fileID: 8300000, guid: f3755a6442c8d824e9749929f389b2d1, type: 3}
   _brokenToothSound: {fileID: 8300000, guid: 5bd89b1fead4d534c9323f07a366e5e2, type: 3}
-  _catchSound: {fileID: 8300000, guid: 7e865e90ec641024aa4193157cac5231, type: 3}
+  _catchSound: {fileID: 8300000, guid: 597dbf23dc0206d4c818049e0de5c515, type: 3}
   _fallSound: {fileID: 8300000, guid: cbfc2a8d2ba9430499c7801c6cbee705, type: 3}
 --- !u!50 &879716155387296266
 Rigidbody2D:
