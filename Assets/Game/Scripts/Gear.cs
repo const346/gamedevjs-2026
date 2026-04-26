@@ -112,13 +112,13 @@ public class Gear : MonoBehaviour, IDraggable
             var hasToothContact = HasToothContact(parent, Mathf.Sign(delta));
             if (hasToothContact)
             {
-                var deltaCorrection = MathTool.GetGearAngleCorrection
-                    (parent.NumberOfTeeth, NumberOfTeeth, parent.Rotation, Rotation, direction);
+                //var deltaCorrection = MathTool.GetGearAngleCorrection
+                //    (parent.NumberOfTeeth, NumberOfTeeth, parent.Rotation, Rotation, direction);
 
-                if (Mathf.Sign(deltaCorrection) != Mathf.Sign(delta))
-                {
-                    Rotation += deltaCorrection;
-                }
+                //if (Mathf.Sign(deltaCorrection) != Mathf.Sign(delta))
+                //{
+                //    Rotation += deltaCorrection;
+                //}
             }
 
             Debug.DrawRay(transform.position,  direction, hasToothContact ? Color.white : Color.red);

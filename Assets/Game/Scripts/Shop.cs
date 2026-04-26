@@ -153,7 +153,7 @@ public class Shop : MonoBehaviour
         var gear = Instantiate(gearPrefab, _gearHook.transform);
         var seek = Random.Range(0, 100000);
 
-        var sizes = new[] { 10, 14, 18, 6, 22 };
+        var sizes = new[] { 10, 10, 14, 14, 18, 18, 6, 6, 22 };
         var numberOfTeeth = sizes[GetRandomIndex(sizes.Length, k)];
         var brokenTeethRatio = Random.value > 0.75f ? Random.value * 0.5f : 0;
 
