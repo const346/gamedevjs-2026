@@ -749,6 +749,18 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8955790278906223721, guid: fb595dd93e62f2b479020364f2af7db4, type: 3}
+      propertyPath: _quality
+      value: 0.96
+      objectReference: {fileID: 0}
+    - target: {fileID: 8955790278906223721, guid: fb595dd93e62f2b479020364f2af7db4, type: 3}
+      propertyPath: _maxWearout
+      value: 3600
+      objectReference: {fileID: 0}
+    - target: {fileID: 8955790278906223721, guid: fb595dd93e62f2b479020364f2af7db4, type: 3}
+      propertyPath: _minWearout
+      value: 360
+      objectReference: {fileID: 0}
+    - target: {fileID: 8955790278906223721, guid: fb595dd93e62f2b479020364f2af7db4, type: 3}
       propertyPath: _numberOfTeeth
       value: 10
       objectReference: {fileID: 0}
