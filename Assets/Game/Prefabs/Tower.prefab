@@ -622,6 +622,9 @@ MonoBehaviour:
   _gunAnchor: {fileID: 5099541587304906332}
   _throwSound: {fileID: 8300000, guid: eae024d314aba2148b3b68c3e0b128ea, type: 3}
   _faceThrowDirection: 1
+  _returnDelay: 10
+  _bulletOffset: {x: 0.2, y: 0.5}
+  _bulletOffsetRotation: 12
 --- !u!1001 &7172203757029592568
 PrefabInstance:
   m_ObjectHideFlags: 0
