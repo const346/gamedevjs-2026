@@ -1,5 +1,6 @@
 using System.Collections;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -15,12 +16,22 @@ public class Game : MonoBehaviour
     public int CurrentWave { get; private set; }
     public int TotalWave { get; private set; }
 
+    private static bool _isShowedTutorial;
+
     private void Start()
     {
         for (int i = 0; i < transform.childCount; i++)
         {
             var child = transform.GetChild(i);
             child.gameObject.SetActive(false);
+        }
+
+        if (!_isShowedTutorial)
+        {
+            _pageController.Show("Tutorial");
+            _isShowedTutorial = true;
+
+            PauseGame();
         }
 
         StartCoroutine(Running());
