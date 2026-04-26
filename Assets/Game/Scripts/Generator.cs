@@ -13,6 +13,7 @@ public class Generator : MonoBehaviour
     [SerializeField] private float throwAngleVariance = 75f;
     [SerializeField] private float throwForceVariance = 2f;
 
+    private float _m;
     private float _accumulated;
     private float _lastStepTime = -100;
 
@@ -23,8 +24,13 @@ public class Generator : MonoBehaviour
 
     private void OnGearSimulate(float step)
     {
-        _accumulated += Mathf.Abs(step);
-        var time = (_accumulated % _spawnInterval) / _spawnInterval;
+        _m += step;
+
+        if (Mathf.Abs(_m) > 10)
+        {
+            _accumulated += Mathf.Abs(_m);
+            _m = 0;
+        }
 
         if (_accumulated >= _spawnInterval)
         {
@@ -41,6 +47,7 @@ public class Generator : MonoBehaviour
 
         if (_animator != null)
         {
+            var time = ((_accumulated + Mathf.Abs(_m)) % _spawnInterval) / _spawnInterval;
             _animator.SetFloat("Time", time);
         }
 

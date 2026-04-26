@@ -82,7 +82,7 @@ public class Gear : MonoBehaviour, IDraggable
             price /= 2;
         }
 
-        return price;
+        return price / 2;
     }
 
     private static readonly GearGraph _gearGraph = new();
@@ -107,22 +107,24 @@ public class Gear : MonoBehaviour, IDraggable
     {
         if (parent != null && !isAxial)
         {
-            //var steps = Mathf.FloorToInt(delta / NumberOfTeeth);
-            //Debug.Log($"steps: {steps}");
-            
+            var direction = (parent.Position - Position).normalized;
 
+            var hasToothContact = HasToothContact(parent, Mathf.Sign(delta));
+            if (hasToothContact)
+            {
+                var deltaCorrection = MathTool.GetGearAngleCorrection
+                    (parent.NumberOfTeeth, NumberOfTeeth, parent.Rotation, Rotation, direction);
 
-            var toothA = GetTooth(parent.transform.position - transform.position);
-            var toothB = parent.GetTooth(transform.position - parent.transform.position);
+                if (Mathf.Sign(deltaCorrection) != Mathf.Sign(delta))
+                {
+                    Rotation += deltaCorrection;
+                }
+            }
 
-            Debug.DrawLine(toothA.position, transform.position,  Color.darkKhaki);
-            Debug.DrawLine(toothB.position, parent.transform.position, Color.darkCyan);
+            Debug.DrawRay(transform.position,  direction, hasToothContact ? Color.white : Color.red);
 
-
-            var k = toothA.gameObject.activeSelf && toothA.gameObject.activeSelf;
-            var s = k ? 1 : 0.5f;
-
-            delta *= -1f * s * parent.NumberOfTeeth / NumberOfTeeth;
+            var scaler = hasToothContact ? 1 : 0.5f;
+            delta *= -1f * scaler * parent.NumberOfTeeth / NumberOfTeeth;
         }
 
         _wearout += Mathf.Abs(delta);
@@ -190,15 +192,40 @@ public class Gear : MonoBehaviour, IDraggable
         }
     }
 
-    private Transform GetTooth(Vector2 direction)
+    private Transform GetTooth(Vector2 direction, float k = 0)
     {
+        var toothAngle = 360f / _numberOfTeeth;
+
+        var offset = k * toothAngle;
+
         var localDirection = Quaternion.Inverse(transform.rotation) * direction.normalized;
-        var alpha = Mathf.Atan2(localDirection.y, localDirection.x) * Mathf.Rad2Deg;
+        var alpha = Mathf.Atan2(localDirection.y, localDirection.x) * Mathf.Rad2Deg + offset;
         alpha = (alpha + 360 - 90) % 360;
 
-        var toothAngle = 360f / _numberOfTeeth;
         var toothIndex = Mathf.RoundToInt(alpha / toothAngle) % _numberOfTeeth;
         return _toothContainer.GetChild(toothIndex);
+    }
+
+    private bool HasToothContact(Gear parent, float sign)
+    {
+        sign = Mathf.Sign(sign);
+
+        var direction = (parent.Position - Position).normalized;
+
+        var toothA1 = GetTooth(direction, -0.5f * sign);
+        var toothB1 = parent.GetTooth(direction * -1f);
+        var toothA2 = GetTooth(direction, 0.5f * sign);
+        var toothB2 = parent.GetTooth(direction * -1f, -1f * sign);
+
+        var k1 = toothA1.gameObject.activeSelf && toothB1.gameObject.activeSelf;
+        var k2 = toothA2.gameObject.activeSelf && toothB2.gameObject.activeSelf;
+
+        //Debug.DrawLine(toothA.position, transform.position, Color.red);
+        //Debug.DrawLine(toothB.position, parent.transform.position, Color.blue);
+        //Debug.DrawLine(toothA2.position, transform.position, Color.darkRed);
+        //Debug.DrawLine(toothB2.position, parent.transform.position, Color.darkBlue);
+
+        return k1 || k2;
     }
 
     private void BreakTooth(Vector2 direction)

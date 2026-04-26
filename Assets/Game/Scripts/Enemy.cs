@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.U2D.Animation;
 
 public class Enemy : MonoBehaviour
 {
@@ -45,11 +45,23 @@ public class Enemy : MonoBehaviour
         _animator.SetTrigger("Death");
 
         Destroy(_collider);
-        Destroy(gameObject, _deathDuration);
+        StartCoroutine(DestroyYield(_deathDuration));
 
         SpawnReward();
 
         AudioSource.PlayClipAtPoint(_deathSound, transform.position);
+    }
+
+    private IEnumerator DestroyYield(float duration) // try fix skin bug webgl builds
+    {
+        yield return new WaitForSeconds(duration);
+
+        foreach (var skin in GetComponentsInChildren<SpriteSkin>()) 
+        {
+            Destroy(skin);
+        }
+
+        Destroy(gameObject);
     }
 
     private void SpawnReward()
