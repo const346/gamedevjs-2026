@@ -6,7 +6,10 @@ public class Game : MonoBehaviour
 {
     [SerializeField] private CameraController2D _cameraController;
     [SerializeField] private PageController _pageController;
-    [SerializeField] private EnemyTarget _enemyTarget; 
+    [SerializeField] private EnemyTarget _enemyTarget;
+
+    public int CurrentWave { get; private set; }
+    public int TotalWave { get; private set; }
 
     private void Start()
     {
@@ -21,6 +24,8 @@ public class Game : MonoBehaviour
 
     private IEnumerator Running()
     {
+        TotalWave = transform.childCount;
+
         for (int i = 0; i < transform.childCount; i++)
         {
             var child = transform.GetChild(i);
@@ -29,6 +34,8 @@ public class Game : MonoBehaviour
                 child.gameObject.SetActive(true);
                 yield return task.Running(_enemyTarget);
                 child.gameObject.SetActive(false);
+
+                CurrentWave++;
 
                 if (!_enemyTarget.IsLive)
                 {

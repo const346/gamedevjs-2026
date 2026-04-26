@@ -247,8 +247,8 @@ MonoBehaviour:
   _respawnTime: 3
   _showingTime: 0.5
   _gearPrefabs:
-  - {fileID: 9005814808016791066, guid: bb3ddc173c2e358469523a0825d2f0e6, type: 3}
   - {fileID: 2071181424562201854, guid: 1713e7b3738d135438b86b8764a613ea, type: 3}
+  - {fileID: 9005814808016791066, guid: bb3ddc173c2e358469523a0825d2f0e6, type: 3}
   - {fileID: 8955790278906223721, guid: fb595dd93e62f2b479020364f2af7db4, type: 3}
 --- !u!95 &2638500868019804116
 Animator:

@@ -143,16 +143,30 @@ public class Shop : MonoBehaviour
 
     private Gear GenerateGear()
     {
-        var gearPrefab = _gearPrefabs[Random.Range(0, _gearPrefabs.Length)];
-        var gear = Instantiate(gearPrefab, _gearHook.transform);
+        var game = FindAnyObjectByType<Game>();
+        var k = game.CurrentWave / (float) game.TotalWave;
+        k = Mathf.Clamp01(k + 0.5f);
 
+        var gearPrefabIndex = GetRandomIndex(_gearPrefabs.Length, k);
+        var gearPrefab = _gearPrefabs[gearPrefabIndex];
+
+        var gear = Instantiate(gearPrefab, _gearHook.transform);
         var seek = Random.Range(0, 100000);
-        var numberOfTeeth = 6 + Random.Range(0, 4) * 4;
-        var brokenTeethRatio = Random.value > 0.5f ? Random.value * 0.5f : 0;
+
+        var sizes = new[] { 6, 10, 14, 18, 22 };
+        var numberOfTeeth = sizes[GetRandomIndex(sizes.Length, k)];
+        var brokenTeethRatio = Random.value > 0.75f ? Random.value * 0.5f : 0;
 
         gear.Rebuild(seek, numberOfTeeth, brokenTeethRatio);
         gear.IsDraggable = false;
 
         return gear;
+    }
+
+    private int GetRandomIndex(int count, float k)
+    {
+        var power = Mathf.Lerp(1f, 5f, k);
+        var t = Mathf.Pow(Random.value, power);
+        return Mathf.FloorToInt(t * count);
     }
 }
