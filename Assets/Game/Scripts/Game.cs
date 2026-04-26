@@ -58,7 +58,11 @@ public class Game : MonoBehaviour
                 child.gameObject.SetActive(false);
 
                 CurrentWave++;
-                _waveInfo.text = $"{CurrentWave + 1}/{TotalWave}";
+
+                if (CurrentWave < TotalWave)
+                {
+                    _waveInfo.text = $"{CurrentWave + 1}/{TotalWave}";
+                }
 
                 if (!_enemyTarget.IsLive)
                 {
